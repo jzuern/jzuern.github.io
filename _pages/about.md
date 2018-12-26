@@ -3,20 +3,24 @@ layout: content
 title: About
 permalink: /about/
 ---
-Hi, I'm Johnny and I live in the Shire. Thanks for visiting my site.
 
-I program and write about software development when I have the time. More information can be found through <a href="https://www.linkedin.com/" data-network="LinkedIn" data-proofer-ignore>LinkedIn.</a>
 
-----
 
-## The Website
-This site was made on an [Apple MBP](https://www.apple.com/) powered by [Jekyll](https://jekyllrb.com) on [Github Pages](https://pages.github.com).
+![](assets/me-0.2x.jpg)
+
+
+## Hi!
+
+My name is Jannik Zürn and I am a Ph.D. student in robotics at the [Autonomous Intelligent Systems lab](http://ais.informatik.uni-freiburg.de/) at the University of Freiburg.
+
+For my Ph.D. thesis I am working on autonomous urban navigation for pedestrian robots.
+
+You can find my work homepage with links to current research projects [here](http://www2.informatik.uni-freiburg.de/~zuern/).
+
+You can find my CV [here](/assets/cv.pdf).
+
+
+
+
 I'd love to hear your feedback on this site and my work.
-
-----
-
-## Etcetera
-
-- [Instagram](https://www.instagram.com/) for 📸
-- [Facebook](https://www.facebook.com/) for 🕺
 

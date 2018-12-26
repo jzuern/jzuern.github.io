@@ -1,14 +1,14 @@
 # Site settings
-title: "Paper Jekyll Theme"
+title: "jzuern.github.io"
 description: > 
-  Write a description of your website here.
+  A playground for everything interesting and irrelevant.
 
-author: Johnny Appleseed
-email: johnny@appleseed.com
-twitter_username: _HairForceOne
-github_username: mkchoi212
+author: Jannik Zürn
+email: jannik.zuern@gmail.com
+twitter_username: xxx
+github_username: jzuern
 
-baseurl: "/paper-jekyll-theme" # the subpath of your site, e.g. /blog
+baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://deadbeef.me" # the base hostname & protocol for your site
 
 google_analytics_id: UA-1111111111-1
