@@ -1,6 +1,6 @@
 # Site settings
 title: "jzuern.github.io"
-description: > 
+description:
   A playground for everything interesting and irrelevant.
 
 author: Jannik Zürn
@@ -9,9 +9,9 @@ twitter_username: xxx
 github_username: jzuern
 
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "https://deadbeef.me" # the base hostname & protocol for your site
+url: "https://jzuern.github.io" # the base hostname & protocol for your site
 
-google_analytics_id: UA-1111111111-1
+google_analytics_id:
 disqus_id:
 
 # Build settings

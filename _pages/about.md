@@ -17,7 +17,7 @@ For my Ph.D. thesis I am working on autonomous urban navigation for pedestrian r
 
 You can find my work homepage with links to current research projects [here](http://www2.informatik.uni-freiburg.de/~zuern/).
 
-You can find my CV [here](/assets/cv.pdf).
+You can find my CV [here](assets/cv.pdf).
 
 
 
