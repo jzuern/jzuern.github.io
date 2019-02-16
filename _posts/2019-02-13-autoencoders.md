@@ -5,6 +5,7 @@ description: "A high-level introduction into autoencoders"
 date: 2019-02-15
 tags: blog
 comments: true
+use_math: true
 ---
 
 
