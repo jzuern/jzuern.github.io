@@ -32,6 +32,17 @@ Autoencoders are structured to take an input, transform this input into a differ
 
 
 
+
+We employ a convolutional autoencoder to obtain a compact encoding of patch content in the image feature space. We used the Deep VAE from the paper 'Deep Embedded Clustering with Data Augmentation' to find feature-space embeddings for each patch. The approach consists of two independent ideas:
+
+A convolutional autoencoder is used to generate low-dimensional representations for the images of patches. Our bottleneck layer has 32 dimensions. During training of the autoencoder, the input image resolutions are reduced while the number of image channels is increased using convolutional filters. The  image is flattened and using a Fully Connected Layer reduced to the 32-dimensional feature vector in latent space. This is the so-called encoder of the network since image information is encoded (== boiled down) in the feature vector. In the subsequent decoder, the image is reconstructed from the feature vector and scaled up using transposed convolutional layers.
+
+More formally, an autoencoder is a nonlinear mapping of an input $x$ into an output $x'$ using an intermediate representation $x_{encoded} = f_{encode}(x)$. During training the encoding part of the neural network learns a nonlinear mapping of $x$ into $x_{encoded}$. The decoder, on the other hand, learns a nonlinear mapping from $x_{encoded}$ into the original space. The goal of training is to minimize a loss 
+
+
+
+
+
 ### Vanilla Autoencoder
 
 The most 
@@ -45,7 +56,7 @@ $$
 The term $$\mathcal{L}$$ stands for an arbitrary loss function. An exemplary loss function typically encountered with autoencoders is the MSE (mean squared error) between autoencoder input and output:  $$\mathcal{L}(\mathbf{x}|\mathbf{\theta}) = ||\mathbf{x} - f(g(\mathbf{x}))||^2$$.
 
 
-If activations of dings are linear, learns PCA!
+If we set all activation functions of the encoder to linear functions (no ReLu, tanh or similar), it can be shown that the encoder learns in fact to perform PCA (Principal Component Analysis)! The intuition behind this fact is that the principal components of an arbitrary distribution within the input $$x$$ is
 
 
 

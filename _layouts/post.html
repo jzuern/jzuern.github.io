@@ -40,3 +40,8 @@ layout: page
   </div>
   {% endif %}
 </article>
+
+{% if site.disqus.shortname %}
+  {% include disqus_comments.html %}
+{% endif %}
+
