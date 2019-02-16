@@ -24,37 +24,38 @@ TEST
 
 ## Concept
 
-Autoencoders are structured to take an input, transform this input into a different representation, an _embedding_
+Autoencoders are structured to take an input, transform this input into a different representation, an _embedding_ of the input. From this input, it aims to reconstruct the input as precicely as possible. This mapping from input to reconstructed input can obviously not be exact if the embedding contains less information than the input. If this is the case, the autoencoder is called *undercomplete*. In this post, we will exclusively deal with undercomplete autoencoders. But why would someone actually want to have an undercomplete autoencoder? Using a low-dimensional embedding layer forces the autoencoder during training to find an embedding or _code_ (hence the name autoencoder) that somewhat represents the input in a concrete way but contains far less bits. It is a form of _Dimensionality reduction_.
 
 
 
 ## Math
 
+
+
 ### Vanilla Autoencoder
 
-<!-- $$
-\begin{align*}
-  & \phi(x,y) = \phi \left(\sum_{i=1}^n x_ie_i, \sum_{j=1}^n y_je_j \right)
-  = \sum_{i=1}^n \sum_{j=1}^n x_i y_j \phi(e_i, e_j) = \\
-  & (x_1, \ldots, x_n) \left( \begin{array}{ccc}
-      \phi(e_1, e_1) & \cdots & \phi(e_1, e_n) \\
-      \vdots & \ddots & \vdots \\
-      \phi(e_n, e_1) & \cdots & \phi(e_n, e_n)
-    \end{array} \right)
-  \left( \begin{array}{c}
-      y_1 \\
-      \vdots \\
-      y_n
-    \end{array} \right)
-\end{align*}
-$$ -->
-
+The most 
 
 $$
 \begin{align*}
-f(g(x)) = 0
+loss = \mathcal{L}(f(g(\mathbf{x})) - \mathbf{x}) \rightarrow Min
 \end{align*}
 $$
+
+The term $$\mathcal{L}$$ stands for an arbitrary loss function. An exemplary loss function typically encountered with autoencoders is the MSE (mean squared error) between autoencoder input and output:  $$\mathcal{L}(\mathbf{x}|\mathbf{\theta}) = ||\mathbf{x} - f(g(\mathbf{x}))||^2$$.
+
+
+If activations of dings are linear, learns PCA!
+
+
+
+
+### Convolutional Autoencoder
+
+A convolutional autoencoder has layer-types in its encoder and decoder that _convolve_ the input in some way. Typical examples for these kinds of layers are 2-D convolutions or transposed 2-D convolutions.
+
+
+
 
 ### Sparse Autoencoder
 
@@ -62,15 +63,19 @@ The term _sparse_ autoencoder entails a whole type of autoencoders, of which I w
 
 $$
 \begin{align*}
-loss = x - f(g(x)) ^2
+loss = \mathcal{L}(f(g(\mathbf{x})) - \mathbf{x}) + \Omega(\mathbf{h})
 \end{align*}
 $$
 
+
+
 ### Denoising Autoencoder
+
+Loss not between ---
 
 $$
 \begin{align*}
-loss = x - f(g(x)) ^2
+loss = \mathbf{x} - f(g(\tilde{\mathbf{x}})) ^2
 \end{align*}
 $$
 
@@ -79,17 +84,20 @@ $$
 
 $$
 \begin{align*}
-loss = ||x - f(g(x))||^2
+\Omega(\mathbf{h}) = \lambda \sum_i  ||\nabla_x h_i||^2
 \end{align*}
 $$
 
+This lets extraction function resist infinitesimal permutations w.r.t. the input $$\mathbf{x}$$
+
 # Code
 
-
+<!-- 
  {% raw %}
   $$a^2 + b^2 = c^2$$ --> note that all equations between these tags will not need escaping! 
  {% endraw %}
 
+ -->
 
 
 
