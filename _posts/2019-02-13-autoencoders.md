@@ -55,6 +55,8 @@ $$
 
 ### Sparse Autoencoder
 
+The term _sparse_ autoencoder entails a whole type of autoencoders, of which I will talk about later. Sparse autoencoder enforce sparsity on the latent variables z after encoding the input. This means that 
+
 $$
 \begin{align*}
 loss = x - f(g(x)) ^2
@@ -84,7 +86,7 @@ $$
  {% raw %}
   $$a^2 + b^2 = c^2$$ --> note that all equations between these tags will not need escaping! 
  {% endraw %}
- 
+
 
 
 
@@ -96,10 +98,3 @@ LSH uses a locality-preserving hash function that maps a point in a multidimensi
 
 
 LSH reduces the runtime complexity of neighborhood from $$\mathcal{O}(N^2)$$ to $$\mathcal{O}(N \log N)$$ where $$N$$ denotes the number of feature vectors. Even though LSH does not guarantee finding the closest neighbor, it finds it with very high probability which is sufficient for our purpose.
-
-
-
-
-Richard Wagner | Feierliches Stück
-https://www.youtube.com/watch?v=cELr3_4uxO4
-
