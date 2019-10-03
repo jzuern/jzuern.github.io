@@ -4,7 +4,7 @@ title: Projects
 permalink: /projects/
 ---
 
-Here are some of the projects I worked on:
+This is an incomplete list of projects I worked on:
 
 
 - [Neural Network implementation for MNIST digit classification without any ML libraries](https://github.com/jzuern/neuralnet-mnist)
@@ -16,7 +16,4 @@ Here are some of the projects I worked on:
 ](https://github.com/jzuern/sph-fluidsim-fortran)
 - [A lightweight workout timer app for workouts of all kind](https://github.com/jzuern/pockettimer)
 
-
-<!-- # Talks
-- How to ???? -->
 
