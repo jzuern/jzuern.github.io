@@ -35,7 +35,9 @@ I have supervised a number of theses of very bright students:
 
 ## Lectures
 
-I have participated in the following lectures 
+I have participated in the following lectures:
+
+2019 Summer Term: [Deep Learning Lab](http://ais.informatik.uni-freiburg.de/teaching/ss19/deep_learning_lab/)
 
 
 
