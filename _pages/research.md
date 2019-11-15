@@ -31,7 +31,10 @@ Below you may find a chronological list of my publications:
 
 I have supervised a number of theses of very bright students:
 
-- Y. Satyawan: *Curb and Curb Cut Detection using Deep Learning*, 2019, Bachelor's Thesis (Ongoing)
+- Y. Satyawan: *Curb and Curb Cut Detection using Deep Learning*, 2019, Bachelor's Thesis
+
+- T. Krautschneider: *Multimodal Object Tracking with Deep Learning*, 2019/20, Bachelor's Thesis
+
 
 ## Lectures
 
