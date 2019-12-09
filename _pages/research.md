@@ -17,7 +17,7 @@ Below you may find a chronological list of my publications:
 
 
 
-- [2019] J Zürn, W Burgard, A Valada: *Self-Supervised Visual Terrain Classification from Unsupervised Acoustic Feature Learning* <br/> [ArXiv Preprint](https://arxiv.org/abs/1912.03227)
+- [2019] J Zürn, W Burgard, A Valada: *Self-Supervised Visual Terrain Classification from Unsupervised Acoustic Feature Learning* <br/> [ArXiv preprint](https://arxiv.org/abs/1912.03227)
 
 
 - [2019] C Megnin, B Moradi, J Zürn, H Ossmer, M Gueltig, M Kohl: *Shape memory alloy based controllable multi-port microvalve* <br/> [Publisher link](https://link.springer.com/article/10.1007/s00542-019-04614-w) 
@@ -36,7 +36,7 @@ Below you may find a chronological list of my publications:
 
 I have supervised a number of theses of very bright students:
 
-- Y. Satyawan: *Curb and Curb Cut Detection using Deep Learning*, 2019, Bachelor's Thesis
+- Y. Satyawan: *Semantic Segmentation of Curb and Curb Cuts in Street Imagery*, 2019, Bachelor's Thesis
 
 - T. Krautschneider: *Multimodal Object Tracking with Deep Learning*, 2019/20, Bachelor's Thesis
 
