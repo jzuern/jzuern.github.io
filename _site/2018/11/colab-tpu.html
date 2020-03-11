@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Using a TPU in Google Colab - jzuern.github.io</title>
+  <meta name="description" content="                              TPU unit with 4 cores      Last week, we talked about training an image classifier on the CIFAR-10 dataset using Google Colab o...">
+  <link href='https://fonts.googleapis.com/css?family=Roboto+Mono|Roboto:300,400,900,400italic' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://localhost:4000/2018/11/colab-tpu.html">
+  <link rel="alternate" type="application/rss+xml" title="jzuern.github.io" href="http://localhost:4000/feed.xml">
+</head>
+
+  <body>
+    <main class="u-container">
+      <div class="c-page">
+  <header class="c-page__header">
+  <h1><code>jzuern.github.io</code></h1>
+  
+  <p>
+    <a href="/">Home</a><span
+          class="u-separate"></span> <a href="/research/">Research</a><span class="u-separate"><span class="u-separate"></span><a href="/projects/">Projects</a><span class="u-separate"></span> <a href="/about/">About</a><span class="u-separate"></span><a href="/feed.xml">RSS</a>
+  </p>
+</header>
+
+  <div class="c-page__main">
+    <article class="c-article">
+  <header class="c-article__header">
+    <h1 class="c-article__title">Using a TPU in Google Colab</h1>
+    <p class="c-article__time"><time datetime="2018-11-07T00:00:00+01:00" itemprop="datePublished">Nov 7, 2018</time></p>
+  </header>
+  <!-- Post Tags -->
+  <ul class="c-tags">
+    
+    <li class="c-tag">blog</li>
+    
+  </ul>
+  <div class="c-article__main">
+    <table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="/images/tpu/1.jpg" alt="" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>TPU unit with 4 cores</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<p><a href="https://medium.com/@jannik.zuern/training-a-cifar-10-classifier-in-the-cloud-using-tensorflow-and-google-colab-f3a5fbdfe24d">Last week</a>, we talked about training an image classifier on the CIFAR-10 dataset using Google Colab on a Tesla K80 GPU in the cloud. This time, we will instead carry out the classifier training on a Tensor Processing Unit (TPU).</p>
+
+<blockquote>
+  <p>Because training and running deep learning models can be computationally demanding, we built the Tensor Processing Unit (TPU), an ASIC designed from the ground up for machine learning that powers several of our major products, including Translate, Photos, Search, Assistant, and Gmail.</p>
+</blockquote>
+
+<p>TPU’s have been recently added to the Google Colab portfolio making it even more attractive for quick-and-dirty machine learning projects when your own local processing units are just not fast enough. While the Tesla K80 available in Google Colab delivers respectable 1.87 TFlops and has 12GB RAM, the <strong>TPUv2</strong> available from within Google Colab comes with a whopping 180 TFlops, give or take. It also comes with 64 GB High Bandwidth Memory (HBM).</p>
+
+<h1 id="enabling-tpu-support-in-the-notebook">Enabling TPU support in the notebook</h1>
+
+<p>In order to try out the TPU on a concrete project, we will work with a Colab notebook, in which a Keras model is trained on classifying the CIFAR-10 dataset. It can be found <a href="https://colab.research.google.com/drive/1ISfhxFDntfOos7cOeT7swduSqzLEqyFn">HERE</a>.</p>
+
+<p>If you would just like to execute the TPU-compatible notebook, you can find it HERE. Otherwise, just follow the next simple steps to add TPU support to an existing notebook.</p>
+
+<p>Enabling TPU support for the notebook is really straightforward. First, let’s change the runtime settings:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="/images/tpu/2.png" alt="" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"> </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>And choose <strong>TPU</strong> as the hardware accelerator:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="/images/tpu/3.png" alt="" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"> </td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="code-adjustments">Code adjustments</h1>
+<p>We also have to make minor adjustments to the Python code in the notebook. We add a new cell anywhere in the notebook in which we check that the TPU devices are properly recognized in the environment:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pprint</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="n">tf</span>
+
+<span class="k">if</span> <span class="s">'COLAB_TPU_ADDR'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+  <span class="k">print</span><span class="p">(</span><span class="s">'ERROR: Not connected to a TPU runtime; please see the first cell in this notebook for instructions!'</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+  <span class="n">tpu_address</span> <span class="o">=</span> <span class="s">'grpc://'</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">'COLAB_TPU_ADDR'</span><span class="p">]</span>
+  <span class="k">print</span> <span class="p">(</span><span class="s">'TPU address is'</span><span class="p">,</span> <span class="n">tpu_address</span><span class="p">)</span>
+
+  <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">tpu_address</span><span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+    <span class="n">devices</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">list_devices</span><span class="p">()</span>
+    
+  <span class="k">print</span><span class="p">(</span><span class="s">'TPU devices:'</span><span class="p">)</span>
+  <span class="n">pprint</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">devices</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>This should output a list of 8 TPU devices available in our Colab environment. In order to run the tf.keras model on a TPU, we have to convert it to a TPU-model using the <code class="highlighter-rouge">tf.contrib.tpu.keras_to_tpu</code> module. Luckily, the module takes care of everything for us, leaving us with a couple of lines of boilerplate code.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># This address identifies the TPU we'll use when configuring TensorFlow.</span>
+<span class="n">TPU_WORKER</span> <span class="o">=</span> <span class="s">'grpc://'</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">'COLAB_TPU_ADDR'</span><span class="p">]</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">set_verbosity</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+<span class="n">resnet_model</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">tpu</span><span class="o">.</span><span class="n">keras_to_tpu_model</span><span class="p">(</span>
+    <span class="n">resnet_model</span><span class="p">,</span>
+    <span class="n">strategy</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">tpu</span><span class="o">.</span><span class="n">TPUDistributionStrategy</span><span class="p">(</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">cluster_resolver</span><span class="o">.</span><span class="n">TPUClusterResolver</span><span class="p">(</span><span class="n">TPU_WORKER</span><span class="p">)))</span>
+</code></pre></div></div>
+
+<p>In case your model is defined using the recently presented <strong>TensorFlow Estimator API</strong>, you only have to make some minor adjustments to your Estimator’s <code class="highlighter-rouge">model_fn</code> like so:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># </span>
+<span class="c"># .... body of model_fn</span>
+<span class="c">#</span>
+
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">AdamOptimizer</span><span class="p">()</span>
+  <span class="k">if</span> <span class="n">FLAGS</span><span class="o">.</span><span class="n">use_tpu</span><span class="p">:</span>
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">tpu</span><span class="o">.</span><span class="n">CrossShardOptimizer</span><span class="p">(</span><span class="n">optimizer</span><span class="p">)</span>
+
+  <span class="n">train_op</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">get_global_step</span><span class="p">())</span>
+  
+<span class="c">#   return tf.estimator.EstimatorSpec(   # CPU or GPU estimator </span>
+<span class="c">#     mode=mode,</span>
+<span class="c">#     loss=loss,</span>
+<span class="c">#     train_op=train_op,</span>
+<span class="c">#     predictions=predictions)</span>
+
+  <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">tpu</span><span class="o">.</span><span class="n">TPUEstimatorSpec</span><span class="p">(</span>  <span class="c"># TPU estimator </span>
+      <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+      <span class="n">loss</span><span class="o">=</span><span class="n">loss</span><span class="p">,</span>
+      <span class="n">train_op</span><span class="o">=</span><span class="n">train_op</span><span class="p">,</span>
+      <span class="n">predictions</span><span class="o">=</span><span class="n">predictions</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>You can find an example of a <code class="highlighter-rouge">TPUEstimator</code> in the TensorFlow <a href="https://github.com/tensorflow/tpu/blob/master/models/experimental/cifar_keras/cifar_keras.py">GitHub repository</a>.</p>
+
+<p>You should also consider increasing the batch size for training and validation of your model. Since we have 8 TPU units available, a batch size of <script type="math/tex">8 \times 128</script> might be reasonable — depending on your model’s size. Generally speaking, a batch size of <script type="math/tex">8 \times 8^n</script>, <script type="math/tex">n</script> being <script type="math/tex">1, 2, ...</script> is advised. Due to the increased batch size, you can experiment with increasing the learning rate as well, making training even faster.</p>
+
+<h1 id="performance-gains">Performance gains</h1>
+
+<p>Compiling the TPU model and initializing the optimizer shards takes time. Depending on the Colab environment workload, it might take a couple of minutes until the first epoch and all the necessary previous initializations have been completed. However, once the TPU model is up and running, it is <em>lightning fast</em>.</p>
+
+<p>Using the Resnet model discussed in the previous post, one epoch takes approximately 25 secs compared to the approx. 7 minutes on the Tesla K80 GPU, resulting in a speedup of almost <strong>17</strong>.</p>
+
+  </div>
+  <!-- Previous / Next Buttons -->
+  <div class="pagenav">
+    
+    <div class="wrapper" id="left">
+      <small><b>Previous</b> Oct 25, 2018</small>
+      <br>
+      <a class="no-hov" href="/2018/10/cmc.html">&laquo; The C-M-C Approach</a>
+    </div>
+    
+    
+    <div class="wrapper" id="right">
+      <small>Nov 24, 2018 <b>Next</b></small>
+      <br>
+      <a class="no-hov" href="/2018/11/rl.html">Reinforcement Learning — An introduction &raquo;</a>
+    </div>
+    
+  </div>
+  <!-- Disqus comments view -->
+  
+</article>
+
+
+  <div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        
+        s.src = 'https://jzuern-github-io.disqus.com/embed.js';
+        
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
+  </div>
+  <footer class="c-page__footer">
+  <p>&copy; Jannik Zürn 2020</p>
+  <p><a href="https://github.com/jzuern">Github</a></p>
+</footer>
+
+</div>
+
+
+
+<script type="text/javascript"
+    src="https://cdn.mathjax.org/mathjax/latestMathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+    </main>
+    
+  </body>
+</html>
+
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>

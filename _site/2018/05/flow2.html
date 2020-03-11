@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Neural Networks for Steady-State Fluid Flow Prediction : Part 2 - jzuern.github.io</title>
+  <meta name="description" content="This article aims to give a broad overview of how neural networks, Fully Convolutional neural networks in specific, are able to learn fluid flow around an ob...">
+  <link href='https://fonts.googleapis.com/css?family=Roboto+Mono|Roboto:300,400,900,400italic' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://localhost:4000/2018/05/flow2.html">
+  <link rel="alternate" type="application/rss+xml" title="jzuern.github.io" href="http://localhost:4000/feed.xml">
+</head>
+
+  <body>
+    <main class="u-container">
+      <div class="c-page">
+  <header class="c-page__header">
+  <h1><code>jzuern.github.io</code></h1>
+  
+  <p>
+    <a href="/">Home</a><span
+          class="u-separate"></span> <a href="/research/">Research</a><span class="u-separate"><span class="u-separate"></span><a href="/projects/">Projects</a><span class="u-separate"></span> <a href="/about/">About</a><span class="u-separate"></span><a href="/feed.xml">RSS</a>
+  </p>
+</header>
+
+  <div class="c-page__main">
+    <article class="c-article">
+  <header class="c-article__header">
+    <h1 class="c-article__title">Neural Networks for Steady-State Fluid Flow Prediction : Part 2</h1>
+    <p class="c-article__time"><time datetime="2018-05-10T00:00:00+02:00" itemprop="datePublished">May 10, 2018</time></p>
+  </header>
+  <!-- Post Tags -->
+  <ul class="c-tags">
+    
+    <li class="c-tag">blog</li>
+    
+  </ul>
+  <div class="c-article__main">
+    <p>This article aims to give a broad overview of how neural networks, Fully Convolutional neural networks in specific, are able to learn fluid flow around an obstacle by learning from examples.</p>
+
+<p>This series is divided into three parts.</p>
+
+<p><strong>Part 1: <a href="https://jzuern.github.io/2018/04/flow1.html">A data-driven approach to CFD</a></strong></p>
+
+<p><strong>Part 2: Implementation details</strong> (this post)</p>
+
+<p><strong>Part 3: <a href="https://jzuern.github.io/2018/07/flow3.html">Results</a></strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="/images/flow2/1.png" alt="" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"> </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>In part 1, we gained a high-level overview of the data-driven approach to CFD and the steps that are needed to make it work. In this second part, we explore some technical details of essential steps of the data-driven approach to CFD. Concretely, we want to focus on two aspects:</p>
+
+<ul>
+  <li>The architectural details of the neural network</li>
+  <li>Accuracy measurements for the predictions of the Neural Network</li>
+</ul>
+
+<h1 id="results">Results</h1>
+
+<p>As mentioned in the previous post, the network has a Fully-Convolutional architecture. In order to understand how the network processes the input and learns from given samples, lets dive into the code:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="n">tf</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+
+<span class="k">def</span> <span class="nf">int_shape</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+
+  <span class="nb">list</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()</span><span class="o">.</span><span class="n">as_list</span><span class="p">()</span>
+  <span class="k">return</span> <span class="nb">list</span>
+
+<span class="k">def</span> <span class="nf">_activation_summary</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+  <span class="s">"""Helper to create summaries for activations.
+  Creates a summary that provides a histogram of activations.
+  Creates a summary that measure the sparsity of activations.
+  Args:
+    x: Tensor
+  Returns:
+    nothing
+  """</span>
+  <span class="n">tensor_name</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">name</span>
+  <span class="n">tf</span><span class="o">.</span><span class="n">summary</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">tensor_name</span> <span class="o">+</span> <span class="s">'/activations'</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+  <span class="n">tf</span><span class="o">.</span><span class="n">summary</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">tensor_name</span> <span class="o">+</span> <span class="s">'/sparsity'</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">zero_fraction</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">_variable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">initializer</span><span class="p">):</span>
+  <span class="s">"""Helper to create a Variable.
+  Args:
+    name: name of the variable
+    shape: list of ints
+    initializer: initializer for Variable
+  Returns:
+    Variable Tensor
+  """</span>
+  <span class="c"># getting rid of stddev for xavier ## testing this for faster convergence</span>
+  <span class="n">var</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">initializer</span><span class="o">=</span><span class="n">initializer</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">var</span>
+
+<span class="k">def</span> <span class="nf">conv_layer</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">num_features</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+  <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="s">'{0}_conv'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">idx</span><span class="p">))</span> <span class="k">as</span> <span class="n">scope</span><span class="p">:</span>
+    <span class="n">input_channels</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()[</span><span class="mi">3</span><span class="p">])</span>
+
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">_variable</span><span class="p">(</span><span class="s">'weights'</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">kernel_size</span><span class="p">,</span><span class="n">kernel_size</span><span class="p">,</span><span class="n">input_channels</span><span class="p">,</span><span class="n">num_features</span><span class="p">],</span><span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">xavier_initializer_conv2d</span><span class="p">())</span>
+    <span class="n">biases</span> <span class="o">=</span> <span class="n">_variable</span><span class="p">(</span><span class="s">'biases'</span><span class="p">,[</span><span class="n">num_features</span><span class="p">],</span><span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">xavier_initializer_conv2d</span><span class="p">())</span>
+
+    <span class="n">conv</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">conv2d</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">strides</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">padding</span><span class="o">=</span><span class="s">'SAME'</span><span class="p">)</span>
+    <span class="n">conv_biased</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">bias_add</span><span class="p">(</span><span class="n">conv</span><span class="p">,</span> <span class="n">biases</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+      <span class="n">conv_biased</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">conv_biased</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">conv_biased</span>
+
+<span class="k">def</span> <span class="nf">transpose_conv_layer</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">num_features</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+  <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="s">'{0}_trans_conv'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">idx</span><span class="p">))</span> <span class="k">as</span> <span class="n">scope</span><span class="p">:</span>
+    <span class="n">input_channels</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()[</span><span class="mi">3</span><span class="p">])</span>
+    
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">_variable</span><span class="p">(</span><span class="s">'weights'</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">kernel_size</span><span class="p">,</span><span class="n">kernel_size</span><span class="p">,</span><span class="n">num_features</span><span class="p">,</span><span class="n">input_channels</span><span class="p">],</span><span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">xavier_initializer_conv2d</span><span class="p">())</span>
+    <span class="n">biases</span> <span class="o">=</span> <span class="n">_variable</span><span class="p">(</span><span class="s">'biases'</span><span class="p">,[</span><span class="n">num_features</span><span class="p">],</span><span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">xavier_initializer_conv2d</span><span class="p">())</span>
+    <span class="n">batch_size</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">inputs</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">output_shape</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">inputs</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">inputs</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">stride</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">inputs</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">stride</span><span class="p">,</span> <span class="n">num_features</span><span class="p">])</span> 
+    <span class="n">conv</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">conv2d_transpose</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">output_shape</span><span class="p">,</span> <span class="n">strides</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="n">stride</span><span class="p">,</span><span class="n">stride</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">padding</span><span class="o">=</span><span class="s">'SAME'</span><span class="p">)</span>
+    <span class="n">conv_biased</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">bias_add</span><span class="p">(</span><span class="n">conv</span><span class="p">,</span> <span class="n">biases</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+      <span class="n">conv_biased</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">conv_biased</span><span class="p">)</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">int_shape</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+    <span class="n">conv_biased</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">conv_biased</span><span class="p">,</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">stride</span><span class="p">,</span> <span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">stride</span><span class="p">,</span> <span class="n">num_features</span><span class="p">])</span> <span class="c"># new</span>
+    <span class="k">return</span> <span class="n">conv_biased</span>
+
+<span class="k">def</span> <span class="nf">fc_layer</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">hiddens</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">flat</span> <span class="o">=</span> <span class="bp">False</span><span class="p">):</span>
+
+  <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="s">'{0}_fc'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">idx</span><span class="p">))</span> <span class="k">as</span> <span class="n">scope</span><span class="p">:</span>
+    <span class="n">input_shape</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()</span><span class="o">.</span><span class="n">as_list</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">flat</span><span class="p">:</span>
+      <span class="n">dim</span> <span class="o">=</span> <span class="n">input_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+      <span class="n">inputs_processed</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">dim</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">dim</span> <span class="o">=</span> <span class="n">input_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+      <span class="n">inputs_processed</span> <span class="o">=</span> <span class="n">inputs</span>
+    
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">_variable</span><span class="p">(</span><span class="s">'weights'</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">dim</span><span class="p">,</span><span class="n">hiddens</span><span class="p">],</span><span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">xavier_initializer</span><span class="p">())</span>
+    <span class="n">biases</span> <span class="o">=</span> <span class="n">_variable</span><span class="p">(</span><span class="s">'biases'</span><span class="p">,</span> <span class="p">[</span><span class="n">hiddens</span><span class="p">],</span> <span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">xavier_initializer</span><span class="p">())</span>
+    <span class="n">output_biased</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">inputs_processed</span><span class="p">,</span><span class="n">weights</span><span class="p">),</span><span class="n">biases</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span><span class="o">+</span><span class="s">'_fc'</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+      <span class="n">output_biased</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">ouput_biased</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">output_biased</span>
+
+<span class="k">def</span> <span class="nf">nin</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">num_units</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+    <span class="s">""" a network in network layer (1x1 CONV) """</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">int_shape</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">s</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">s</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">fc_layer</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">num_units</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">s</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="p">[</span><span class="n">num_units</span><span class="p">])</span>
+
+<span class="k">def</span> <span class="nf">res_block</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">filter_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">keep_p</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">gated</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">"resnet"</span><span class="p">):</span>
+  <span class="n">orig_x</span> <span class="o">=</span> <span class="n">x</span>
+  <span class="n">orig_x_int_shape</span> <span class="o">=</span> <span class="n">int_shape</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">orig_x_int_shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="n">x_1</span> <span class="o">=</span> <span class="n">conv_layer</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">filter_size</span><span class="p">,</span> <span class="n">name</span> <span class="o">+</span> <span class="s">'_conv_1'</span><span class="p">)</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="n">x_1</span> <span class="o">=</span> <span class="n">conv_layer</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">filter_size</span><span class="p">,</span> <span class="n">name</span> <span class="o">+</span> <span class="s">'_conv_1'</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">a</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="n">shape_a</span> <span class="o">=</span> <span class="n">int_shape</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="n">shape_x_1</span> <span class="o">=</span> <span class="n">int_shape</span><span class="p">(</span><span class="n">x_1</span><span class="p">)</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span>
+      <span class="n">a</span><span class="p">,</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">shape_x_1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">shape_a</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">shape_x_1</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">-</span><span class="n">shape_a</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span>
+      <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+    <span class="n">x_1</span> <span class="o">+=</span> <span class="n">nin</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="n">filter_size</span><span class="p">,</span> <span class="n">name</span> <span class="o">+</span> <span class="s">'_nin'</span><span class="p">)</span>
+  <span class="n">x_1</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">x_1</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">keep_p</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">:</span>
+    <span class="n">x_1</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">x_1</span><span class="p">,</span> <span class="n">keep_prob</span><span class="o">=</span><span class="n">keep_p</span><span class="p">)</span>
+  <span class="k">if</span> <span class="ow">not</span> <span class="n">gated</span><span class="p">:</span>
+    <span class="n">x_2</span> <span class="o">=</span> <span class="n">conv_layer</span><span class="p">(</span><span class="n">x_1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">filter_size</span><span class="p">,</span> <span class="n">name</span> <span class="o">+</span> <span class="s">'_conv_2'</span><span class="p">)</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="n">x_2</span> <span class="o">=</span> <span class="n">conv_layer</span><span class="p">(</span><span class="n">x_1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">filter_size</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="n">name</span> <span class="o">+</span> <span class="s">'_conv_2'</span><span class="p">)</span>
+    <span class="n">x_2_1</span><span class="p">,</span> <span class="n">x_2_2</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">num_or_size_splits</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">x_2</span><span class="p">)</span>
+    <span class="n">x_2</span> <span class="o">=</span> <span class="n">x_2_1</span> <span class="o">*</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">x_2_2</span><span class="p">)</span>
+
+  <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">orig_x</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()[</span><span class="mi">2</span><span class="p">])</span> <span class="o">&gt;</span> <span class="nb">int</span><span class="p">(</span><span class="n">x_2</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()[</span><span class="mi">2</span><span class="p">]):</span>
+    <span class="k">assert</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">orig_x</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()[</span><span class="mi">2</span><span class="p">])</span> <span class="o">==</span> <span class="mi">2</span><span class="o">*</span><span class="nb">int</span><span class="p">(</span><span class="n">x_2</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()[</span><span class="mi">2</span><span class="p">]),</span> <span class="s">"res net block only supports stride 2"</span><span class="p">)</span>
+    <span class="n">orig_x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">avg_pool</span><span class="p">(</span><span class="n">orig_x</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">padding</span><span class="o">=</span><span class="s">'SAME'</span><span class="p">)</span>
+
+  <span class="c"># pad it</span>
+  <span class="n">out_filter</span> <span class="o">=</span> <span class="n">filter_size</span>
+  <span class="n">in_filter</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">orig_x</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()[</span><span class="mi">3</span><span class="p">])</span>
+  <span class="k">if</span> <span class="n">out_filter</span> <span class="o">!=</span> <span class="n">in_filter</span><span class="p">:</span>
+    <span class="n">orig_x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span>
+        <span class="n">orig_x</span><span class="p">,</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+        <span class="p">[(</span><span class="n">out_filter</span><span class="o">-</span><span class="n">in_filter</span><span class="p">),</span> <span class="mi">0</span><span class="p">]])</span>
+  <span class="k">return</span> <span class="n">orig_x</span> <span class="o">+</span> <span class="n">x_2</span>
+
+<span class="k">def</span> <span class="nf">conv_res</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu_name</span><span class="p">,</span> <span class="n">nr_res_blocks</span><span class="p">,</span> <span class="n">filter_size</span><span class="p">,</span> <span class="n">keep_prob</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">gated</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+  <span class="s">"""Builds conv part of net.
+  Args:
+    inputs: input images
+    keep_prob: dropout layer
+  """</span>
+  <span class="c"># store for as</span>
+  <span class="n">a</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="c"># res_1</span>
+  <span class="n">x</span> <span class="o">=</span> <span class="n">inputs</span>
+  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nr_res_blocks</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">res_block</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">filter_size</span><span class="o">=</span><span class="n">filter_size</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span> <span class="n">keep_p</span><span class="o">=</span><span class="n">keep_prob</span><span class="p">,</span> <span class="n">gated</span><span class="o">=</span><span class="n">gated</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">"resnet_1_"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+  
+  <span class="c"># res_2</span>
+  <span class="n">a</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+  <span class="n">filter_size</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">filter_size</span>
+  <span class="n">x</span> <span class="o">=</span> <span class="n">res_block</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">filter_size</span><span class="o">=</span><span class="n">filter_size</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span> <span class="n">keep_p</span><span class="o">=</span><span class="n">keep_prob</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">gated</span><span class="o">=</span><span class="n">gated</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">"resnet_2_downsample"</span><span class="p">)</span>
+  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nr_res_blocks</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">res_block</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">filter_size</span><span class="o">=</span><span class="n">filter_size</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span> <span class="n">keep_p</span><span class="o">=</span><span class="n">keep_prob</span><span class="p">,</span> <span class="n">gated</span><span class="o">=</span><span class="n">gated</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">"resnet_2_"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+  
+  <span class="c"># res_3</span>
+  <span class="n">a</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+  <span class="n">filter_size</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">filter_size</span>
+  <span class="n">x</span> <span class="o">=</span> <span class="n">res_block</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">filter_size</span><span class="o">=</span><span class="n">filter_size</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span> <span class="n">keep_p</span><span class="o">=</span><span class="n">keep_prob</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">gated</span><span class="o">=</span><span class="n">gated</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">"resnet_3_downsample"</span><span class="p">)</span>
+  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nr_res_blocks</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">res_block</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">filter_size</span><span class="o">=</span><span class="n">filter_size</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span> <span class="n">keep_p</span><span class="o">=</span><span class="n">keep_prob</span><span class="p">,</span> <span class="n">gated</span><span class="o">=</span><span class="n">gated</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">"resnet_3_"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+  
+  <span class="c"># res_4</span>
+  <span class="n">a</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+  <span class="n">filter_size</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">filter_size</span>
+  <span class="n">x</span> <span class="o">=</span> <span class="n">res_block</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">filter_size</span><span class="o">=</span><span class="n">filter_size</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span> <span class="n">keep_p</span><span class="o">=</span><span class="n">keep_prob</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">gated</span><span class="o">=</span><span class="n">gated</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">"resnet_4_downsample"</span><span class="p">)</span>
+  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nr_res_blocks</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">res_block</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">filter_size</span><span class="o">=</span><span class="n">filter_size</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span> <span class="n">keep_p</span><span class="o">=</span><span class="n">keep_prob</span><span class="p">,</span> <span class="n">gated</span><span class="o">=</span><span class="n">gated</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">"resnet_4_"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+  
+  <span class="c"># res_5</span>
+  <span class="n">a</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+  <span class="n">filter_size</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">filter_size</span>
+  <span class="n">x</span> <span class="o">=</span> <span class="n">res_block</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">filter_size</span><span class="o">=</span><span class="n">filter_size</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span> <span class="n">keep_p</span><span class="o">=</span><span class="n">keep_prob</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">gated</span><span class="o">=</span><span class="n">gated</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">"resnet_5_downsample"</span><span class="p">)</span>
+  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nr_res_blocks</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">res_block</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">filter_size</span><span class="o">=</span><span class="n">filter_size</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span> <span class="n">keep_p</span><span class="o">=</span><span class="n">keep_prob</span><span class="p">,</span> <span class="n">gated</span><span class="o">=</span><span class="n">gated</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">"resnet_5_"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+  
+
+  <span class="c"># res_up_1</span>
+  <span class="n">filter_size</span> <span class="o">=</span> <span class="n">filter_size</span> <span class="o">//</span> <span class="mi">2</span>
+  <span class="n">x</span> <span class="o">=</span> <span class="n">transpose_conv_layer</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">filter_size</span><span class="p">,</span> <span class="s">"up_conv_1"</span><span class="p">)</span>
+  <span class="c">#x = PS(x,2,512)</span>
+  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nr_res_blocks</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+      <span class="n">x</span> <span class="o">=</span> <span class="n">res_block</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">filter_size</span><span class="o">=</span><span class="n">filter_size</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span> <span class="n">keep_p</span><span class="o">=</span><span class="n">keep_prob</span><span class="p">,</span> <span class="n">gated</span><span class="o">=</span><span class="n">gated</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">"resnet_up_1_"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">x</span> <span class="o">=</span> <span class="n">res_block</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">filter_size</span><span class="o">=</span><span class="n">filter_size</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span> <span class="n">keep_p</span><span class="o">=</span><span class="n">keep_prob</span><span class="p">,</span> <span class="n">gated</span><span class="o">=</span><span class="n">gated</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">"resnet_up_1_"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+  
+
+  <span class="c"># res_up_2</span>
+  <span class="n">filter_size</span> <span class="o">=</span> <span class="n">filter_size</span> <span class="o">//</span> <span class="mi">2</span>
+  <span class="n">x</span> <span class="o">=</span> <span class="n">transpose_conv_layer</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">filter_size</span><span class="p">,</span> <span class="s">"up_conv_2"</span><span class="p">)</span>
+  <span class="c">#x = PS(x,2,512)</span>
+  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nr_res_blocks</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+      <span class="n">x</span> <span class="o">=</span> <span class="n">res_block</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="n">filter_size</span><span class="o">=</span><span class="n">filter_size</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span> <span class="n">keep_p</span><span class="o">=</span><span class="n">keep_prob</span><span class="p">,</span> <span class="n">gated</span><span class="o">=</span><span class="n">gated</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">"resnet_up_2_"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">x</span> <span class="o">=</span> <span class="n">res_block</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">filter_size</span><span class="o">=</span><span class="n">filter_size</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span> <span class="n">keep_p</span><span class="o">=</span><span class="n">keep_prob</span><span class="p">,</span> <span class="n">gated</span><span class="o">=</span><span class="n">gated</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">"resnet_up_2_"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+
+  <span class="c"># res_up_3</span>
+  <span class="n">filter_size</span> <span class="o">=</span> <span class="n">filter_size</span> <span class="o">//</span> <span class="mi">2</span>
+  <span class="n">x</span> <span class="o">=</span> <span class="n">transpose_conv_layer</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">filter_size</span><span class="p">,</span> <span class="s">"up_conv_3"</span><span class="p">)</span>
+  <span class="c">#x = PS(x,2,512)</span>
+  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nr_res_blocks</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+      <span class="n">x</span> <span class="o">=</span> <span class="n">res_block</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">],</span> <span class="n">filter_size</span><span class="o">=</span><span class="n">filter_size</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span> <span class="n">keep_p</span><span class="o">=</span><span class="n">keep_prob</span><span class="p">,</span> <span class="n">gated</span><span class="o">=</span><span class="n">gated</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">"resnet_up_3_"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">x</span> <span class="o">=</span> <span class="n">res_block</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">filter_size</span><span class="o">=</span><span class="n">filter_size</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span> <span class="n">keep_p</span><span class="o">=</span><span class="n">keep_prob</span><span class="p">,</span> <span class="n">gated</span><span class="o">=</span><span class="n">gated</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">"resnet_up_3_"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+ 
+  <span class="c"># res_up_4</span>
+  <span class="n">filter_size</span> <span class="o">=</span> <span class="n">filter_size</span> <span class="o">//</span> <span class="mi">2</span>
+  <span class="n">x</span> <span class="o">=</span> <span class="n">transpose_conv_layer</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">filter_size</span><span class="p">,</span> <span class="s">"up_conv_4"</span><span class="p">)</span>
+  <span class="c">#x = PS(x,2,512)</span>
+  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nr_res_blocks</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+      <span class="n">x</span> <span class="o">=</span> <span class="n">res_block</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">],</span> <span class="n">filter_size</span><span class="o">=</span><span class="n">filter_size</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span> <span class="n">keep_p</span><span class="o">=</span><span class="n">keep_prob</span><span class="p">,</span> <span class="n">gated</span><span class="o">=</span><span class="n">gated</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">"resnet_up_4_"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">x</span> <span class="o">=</span> <span class="n">res_block</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">filter_size</span><span class="o">=</span><span class="n">filter_size</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span> <span class="n">keep_p</span><span class="o">=</span><span class="n">keep_prob</span><span class="p">,</span> <span class="n">gated</span><span class="o">=</span><span class="n">gated</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">"resnet_up_4_"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+  
+  <span class="c"># res_up_2</span>
+  <span class="n">x</span> <span class="o">=</span> <span class="n">conv_layer</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s">"last_conv"</span><span class="p">)</span>
+  <span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> 
+  <span class="k">return</span> <span class="n">x</span>
+</code></pre></div></div>
+
+<p>The network is build in function conv_res in line 129. Here, first, the residual blocks are built on top of each other while scaling the image down and adding feature maps. Later, in the deconvolutional part of the network, the image is scaled up again, assigning two floating point values to each of the input pixels, representing the flow velocity in x- and y-directions.</p>
+
+<h1 id="prediction-accuracy-estimation">Prediction accuracy estimation</h1>
+
+<p>In order to be able to make useful measurements of the validity of the prediction of a learning algorithm, one has to define metrics that describe the level of accuracy that the learning algorithms offer. The loss of a neural network is the variable that is being minimized by the optimizer during training and describes, how much of an error the neural net produces. Different measurements of how accurate the outputs of the neural network are needed to express the validity of the predictions.</p>
+
+<p>CFD simulations are typically performed with a specific goal in mind. In many applications, a certain metric such as maximum flow velocity, pressure drop, or vorticity is being calculated and optimized. The output of the data-driven approach to CFD presented in this work does merely predicts the flow velocity field for each pixel or voxel for the pixel/voxel grid that is used as an input to the neural network.</p>
+
+<p>For scalar values, a relative error between an estimated value v and the actual value <script type="math/tex">v_0</script> is defined as</p>
+
+<script type="math/tex; mode=display">\begin{align*} 
+e_{rel} = \frac{|v-v_0|}{v}
+\end{align*}</script>
+
+<p>Finally, it is necessary to find a suitable way to map the relative error <script type="math/tex">e_rel</script> of a prediction to the accuracy a of the neural network. If the relative error of the prediction is 0%, the accuracy should be 1.0. In contrast, if the relative error equal or greater than 100%, the accuracy should be close to zero. A Gaussian distribution for this mapping is proposed as follows:</p>
+
+<script type="math/tex; mode=display">\begin{align*} 
+a(e_{rel}; \sigma^2) = e^{-\frac{e_{rel}^2}{2 \sigma^2}}
+\end{align*}</script>
+
+<p>t is proposed that a relative error of 10% should lead to a prediction accuracy of 90%. Solving the equation for the variable sigma yields <script type="math/tex">\sigma^2 = 0.048</script>.</p>
+
+<p>In this work, four metrics describing the accuracy of the neural net output were examined:</p>
+
+<h2 id="fraction-of-correct-pixels"><strong>Fraction of correct pixels</strong></h2>
+
+<p>The number of correctly predicted pixels in an image gives an intuitive metric for how well the neural network predicts fluid flow behavior. As the network will never be able to predict the fluid flow velocity down to the last digit of a floating point number, the following approach is proposed: If the absolute error between the network prediction and the actual flow velocity is smaller than <script type="math/tex">tv</script>, the respective pixel is declared as predicted correctly. The variable <script type="math/tex">v</script> denotes the average flow velocity in the simulation domain, and <script type="math/tex">t</script> denotes a threshold. A value of <script type="math/tex">t = 0.01</script> is suggested. The pixel-based accuracy of the network prediction can thus be defined as:</p>
+
+<script type="math/tex; mode=display">\begin{align*} 
+a_{pixel} = \frac{N_{correctpixels}}{N_{totalpixels}}
+\end{align*}</script>
+
+<ul>
+  <li><strong>Mass flow rate</strong></li>
+</ul>
+
+<p>Another important validation metric for an internal flow simulation is the mass flow rate through the cavity. Denoting <script type="math/tex">\dot{m}</script> as the mass flow rate, the relative error of the prediction of the mass flow rate can be defined as</p>
+
+<script type="math/tex; mode=display">\begin{align*} 
+e_{rel, massflowrate} = \frac{\dot{m}_{simulation} - \dot{m}_{prediction}}{\dot{m}_{simulation}}
+\end{align*}</script>
+
+<p>This leads to the following definition of the accuracy in terms of mass flow rate:</p>
+
+<script type="math/tex; mode=display">\begin{align*} 
+a_{massflowrate} = a(e_{rel, massflowrate}; \sigma^2)
+\end{align*}</script>
+
+<h2 id="drag-value">Drag value</h2>
+
+<p>In many external fluid flow simulation use-cases, the drag of a body in a fluid is an essential value to obtain, which is equal to the force the fluid acts on the body. The lower the drag, the lesser the resistance of the fluid. Therefore, the difference in drag was chosen as an additional metric for the success of the neural network predictions.</p>
+
+<p>An acceptable approximation for the drag can be obtained with the following assumptions:</p>
+
+<ul>
+  <li>Steady flow</li>
+  <li>Incompressible flow</li>
+  <li>Uniform static pressure</li>
+</ul>
+
+<p>Applying momentum conservation in the control volume <script type="math/tex">\Omega</script>, the following momentum balance is obtained:</p>
+
+<script type="math/tex; mode=display">\begin{align*} 
+F_{ext} + \int \int_{\partial \Omega} \rho v_{i}^2 dx dy = 0, i = {1,2} 
+\end{align*}</script>
+
+<p>while <script type="math/tex">\partial \Omega</script> denotes the boundary of the simulation domain and <script type="math/tex">F_ext</script> denotes an external force on the control volume identical to the drag force. Neglecting the velocity component in y-direction and assuming that the flow through the upper and lower boundaries due to the solid wall boundary conditions is negligible, the equation can be simplified to</p>
+
+<script type="math/tex; mode=display">\begin{align*} 
+F_{ext} = \int_A^B \rho U_{infty}^2 dx - \int_C^D \rho v_x^2 dx
+\end{align*}</script>
+
+<p>The velocity at the inlet is denoted as <script type="math/tex">U_{infty}</script>. This derivation does not adhere to mass conservation as it neglects the flow through the upper and lower boundaries, though it holds a simple yet accurate estimate of the drag. Thus, the relative error of the prediction of the drag value is defined as</p>
+
+<script type="math/tex; mode=display">\begin{align*} 
+e_{rel, Drag} = \frac{Drag_{simulation} - Drag_{prediction}}{Drag_{simulation}}
+\end{align*}</script>
+
+<p>and the prediction accuracy may finally be defined as:</p>
+
+<script type="math/tex; mode=display">\begin{align*} 
+a_{drag} = a(e_{rel, drag}; \sigma^2)
+\end{align*}</script>
+
+<h2 id="conservation-of-mass">Conservation of mass</h2>
+
+<p>Numerical CFD solvers aim to find a solution to the continuity equation and the momentum equation. For an incompressible fluid, the continuity equation dictates that the divergence of the velocity vector field is zero for every point in the simulation domain. This follows the intuition that at no point in the simulation domain fluid springs into existence (divergence would be greater than zero) or ceases to exist (divergence would be smaller than zero).</p>
+
+<p>By design, the Finite Volume Method, which is used for the SIMPLE algorithm, preserves this property of the fluid even in a discretized form. A data-driven approach should as well obey this rule. In order to check the physical consistency of the predicted flow field, a discretized form of the divergence operator on the predicted output images is proposed. If <script type="math/tex">u_{i,j,k}</script> denotes the <script type="math/tex">j</script>-th and <script type="math/tex">k</script>-th velocity component in <script type="math/tex">i</script>-direction, a discrete divergence operator <script type="math/tex">div^h</script> may be defined as:</p>
+
+<script type="math/tex; mode=display">\begin{align*} 
+div^h (u_{i,j,k}) = \frac{1}{2} (u_{i,j+1,k} - u_{i,j-1,k} + u_{i,j,k+1} - u_{i,j,k-1}  )
+\end{align*}</script>
+
+<p>This equation is obtained with a central differences approach to approximate the partial derivatives in all dimensions of space. Note that the so-defined divergence of a tensor of shape <strong>[2,M,N]</strong> has the shape <strong>[M-2,N-2]</strong> as the central difference for the outermost pixel is not defined.</p>
+
+<p>In order to define an overall divergence accuracy, the discrete divergence at each grid point is accumulated over the whole grid with:</p>
+
+<script type="math/tex; mode=display">\begin{align*} 
+div = \frac{1}{NM} \sum_i^N \sum_j^M div_{ij}
+\end{align*}</script>
+
+<p>The prefactors in front of the summation term norm the accumulated divergence to the size of the grid in order to define an accuracy independent of grid sizes.</p>
+
+<p>Finally, a mapping of the normed divergence accumulation to an accuracy estimation must be defined. In this work, a value of sigma is proposed for which a normed divergence of <script type="math/tex">10^-3</script>, an accuracy of 90% is reached. Which leads to a value of <script type="math/tex">\sigma = 0.00222</script>.</p>
+
+<p>Thus, an estimate of the physical validity of the prediction can be obtained with the accuracy measurement:</p>
+
+<script type="math/tex; mode=display">\begin{align*} 
+a_{div} = a(e_{div}; \sigma^2)
+\end{align*}</script>
+
+<hr />
+
+<p>This marks the end of our dive into the mechanics of predicting steady-state fluid flows. I hope you enjoyed this visit!</p>
+
+<p>The next chapter will illustrate the results obtained with this data-driven approach to CFD. Be prepared for over 9000 images!</p>
+
+  </div>
+  <!-- Previous / Next Buttons -->
+  <div class="pagenav">
+    
+    <div class="wrapper" id="left">
+      <small><b>Previous</b> Apr 6, 2018</small>
+      <br>
+      <a class="no-hov" href="/2018/04/flow1.html">&laquo; Neural Networks for Steady-State Fluid Flow Prediction : Part 1</a>
+    </div>
+    
+    
+    <div class="wrapper" id="right">
+      <small>Jul 15, 2018 <b>Next</b></small>
+      <br>
+      <a class="no-hov" href="/2018/07/flow3.html">Neural Networks for Steady-State Fluid Flow Prediction : Part 3 &raquo;</a>
+    </div>
+    
+  </div>
+  <!-- Disqus comments view -->
+  
+</article>
+
+
+  <div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        
+        s.src = 'https://jzuern-github-io.disqus.com/embed.js';
+        
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
+  </div>
+  <footer class="c-page__footer">
+  <p>&copy; Jannik Zürn 2020</p>
+  <p><a href="https://github.com/jzuern">Github</a></p>
+</footer>
+
+</div>
+
+
+
+<script type="text/javascript"
+    src="https://cdn.mathjax.org/mathjax/latestMathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+    </main>
+    
+  </body>
+</html>
+
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>

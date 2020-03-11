@@ -1,0 +1,12 @@
+<h3 id="customization">Customization</h3>
+<p>To customize various details - title/description of the website, your SNS accout names, etc - edit the <code class="highlighter-rouge">_config.yml</code> file.</p>
+
+<h3 id="adding-posts">Adding posts</h3>
+<div class="highlighter-rouge"><pre class="highlight"><code>rake post title="A Title" [date="2012-02-09"] [tags=[tag1,tag2]] [category="category"]
+</code></pre>
+</div>
+<p>This will create a markdown file in the default folder where all posts are stored in Jekyll; <code class="highlighter-rouge">_post</code>.</p>
+
+<p>If you wish to <strong>change the directory where posts are saved</strong>, go to the <code class="highlighter-rouge">Rakefile</code> and edit the <code class="highlighter-rouge">CONFIG = { 'posts': CUSTOM_PATH_HERE }</code>. This will allow <code class="highlighter-rouge">rake post</code> to know where to save the new posts to.</p>
+
+<p>The <strong>drafts</strong> you are working on can be saved in the <code class="highlighter-rouge">_drafts</code> directory. When you push your code to the server, files in this directory will NOT be included to the list o posts.</p>

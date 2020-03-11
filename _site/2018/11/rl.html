@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reinforcement Learning — An introduction - jzuern.github.io</title>
+  <meta name="description" content="Reinforcement Learning (RL) has had tremendous success in many disciplines of Machine Learning. While the results of RL almost look magical, it is surprising...">
+  <link href='https://fonts.googleapis.com/css?family=Roboto+Mono|Roboto:300,400,900,400italic' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://localhost:4000/2018/11/rl.html">
+  <link rel="alternate" type="application/rss+xml" title="jzuern.github.io" href="http://localhost:4000/feed.xml">
+</head>
+
+  <body>
+    <main class="u-container">
+      <div class="c-page">
+  <header class="c-page__header">
+  <h1><code>jzuern.github.io</code></h1>
+  
+  <p>
+    <a href="/">Home</a><span
+          class="u-separate"></span> <a href="/research/">Research</a><span class="u-separate"><span class="u-separate"></span><a href="/projects/">Projects</a><span class="u-separate"></span> <a href="/about/">About</a><span class="u-separate"></span><a href="/feed.xml">RSS</a>
+  </p>
+</header>
+
+  <div class="c-page__main">
+    <article class="c-article">
+  <header class="c-article__header">
+    <h1 class="c-article__title">Reinforcement Learning — An introduction</h1>
+    <p class="c-article__time"><time datetime="2018-11-24T00:00:00+01:00" itemprop="datePublished">Nov 24, 2018</time></p>
+  </header>
+  <!-- Post Tags -->
+  <ul class="c-tags">
+    
+    <li class="c-tag">blog</li>
+    
+  </ul>
+  <div class="c-article__main">
+    <p>Reinforcement Learning (RL) has had tremendous success in many disciplines of Machine Learning. While the results of RL almost look magical, it is surprisingly easy to get a grasp of the basic idea behind RL. In this post, we will discuss the basic principles of RL and we will implement a simple environment in which an agent tries to stay alive as long as possible by means of RL.</p>
+
+<p>We will use the <a href="https://jzuern.github.io/2018/10/cmc.html">previously discussed Concept-Math-Code (C-M-C) approach</a> to gain drive our process of understanding RL.</p>
+
+<h2 id="concept">Concept</h2>
+
+<p>Broadly speaking, Reinforcement Learning allows an autonomous agent to learn to make intelligent choices about how it should interact with its environment in order to maximize a reward. The environment can be as simple as a single number expressing a measurement the agent takes, or it can be as complex as a screenshot of the game DOTA2, which the agent learns to play (see <a href="https://openai.com/">https://openai.com/</a>).</p>
+
+<p>For every discrete time step, the agent perceives the state <script type="math/tex">s</script> of his environment and chooses an action <script type="math/tex">a</script> according to its policy. The agent then receives a reward <script type="math/tex">r</script> for its action and the environment transitioned into the next state <script type="math/tex">s’</script>.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="/images/rl/1.png" alt="" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>The feedback loop of RL (image credit: <a href="https://lilianweng.github.io/lil-log/2018/02/19/a-long-peek-into-reinforcement-learning.html">[1]</a>)</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>In order to make RL work, the agent does not necessarily need to know the inner workings of the environment (i.e. it does not need a model of its environment predicting future states of the environment based on the current state). However, learning speed increases if the agent incorporates as much knowledge about the environment <em>a priori</em> as possible.</p>
+
+<h2 id="q-learning">Q-Learning</h2>
+
+<p>Q-Learning was a big breakout in the early days of Reinforcement-Learning. The idea behind Q-Learning is to assign each Action-State pair a value — the Q-value — quantifying an estimate of the amount of reward we might get when we perform a certain action when the environment is in a certain state. So, if we are in a state S, we just pick the action that has the highest assigned Q-value as we assume that we receive the highest reward in return. Once we performed action a, the environment is in a new state S’ and we can measure the reward we actually received in return for performing action a. Once we measured the reward for performing action a, we can then update the Q-values of the Action-Space pair since we now know which rewards we actually received by the environment for performing action a. How the Q-values are actually updated after every time step, we will discuss in the Math section this post.</p>
+
+<p>You might already have noticed a wide-open gap in the Q-Learning algorithm: How the heck are we supposed to know the Q-values of a state-action pair? We might consider updating a table in which we save the Q-values of each state-action pair. Every time we take an action in the environment, we store a new Q-value for a state-action pair. These actions do at first not even have to make sense or lead to high rewards since we are only interested in building up a table of Q-values which we can use to make more intelligent decisions later on. But what if the state S in which an environment has high dimensionality or is sampled from a continuous space? We cannot expect our computer to store infinite amounts of data. What can we do? Neural Networks to the rescue!</p>
+
+<h2 id="deep-q-learning">Deep Q-Learning</h2>
+
+<p>Instead of updating a possibly infinite table of state-action pairs and their respective Q-values, let’s use a Deep Neural Network to map a state-action pair to a Q-value, hence the name Deep Q-Learning.</p>
+
+<p>If the network is trained sufficiently well, it is able to tell with high confidence what Q-values certain actions might have given a state S in which the environment currently is. While this sounds super easy and fun, this approach suffers from instability issues and divergence. Two main mechanisms were introduced by <a href="https://storage.googleapis.com/deepmind-data/assets/papers/DeepMindNature14236Paper.pdf">Mnih et al. in 2015</a> in order to avoid these issues: Experience Replay and Frozen Optimization Target. Briefly stated, experience replay allows the network to learn on a single experience <script type="math/tex">e_{t+1}</script> consisting of a state <script type="math/tex">s_t</script>, an action <script type="math/tex">a_t</script>, reward <script type="math/tex">r_t</script>, and new state <script type="math/tex">s_{t+1}</script> tuple more than one time. The term <strong>“frozen optimization target”</strong>, in contrast, refers to the fact that the Q-value estimation network used for predicting future Q-values is not the same as the network used for training. Every <script type="math/tex">N</script> steps, the values of the trained network are copied to the network being used to predict future Q-values. It was found that this procedure leads to much less instability issues during training.</p>
+
+<h1 id="math">Math</h1>
+
+<p>We have established the concepts behind Q-Learning and why Deep Q-Learning solves the issue with storing possibly infinite numbers of state-action pairs. Let us now briefly dive into some of the math involved in Deep Q Learning.</p>
+
+<p>During the training of the neural network, the Q-values of each state-value pair is updated using the following equation:</p>
+
+<script type="math/tex; mode=display">\begin{align*}
+Q(S_{t+1}, A_{t+1}) = Q(S_t, A_t) + \alpha [R_{t+1} + \gamma \max_{a \in A} Q(S_{t+1}, a) - Q(S_t, A_t)  ]
+\end{align*}</script>
+
+<p>Let us first discuss the term in square brackets. The variable <script type="math/tex">R_{t+1}</script> denotes the reward given to the agent at time step <script type="math/tex">t+1</script>. The next addend denotes the maximal Q-value for all possible actions a while the environment is in the new state <script type="math/tex">S_{t+1}</script>. Beware that this value can also only be an estimate of the true maximal Q-value as we can only estimate future Q-values of state-action pairs. This maximal Q-value is multiplied by a so-called discount factor (denoted gamma). This factor decides how much weight we assign to future rewards in comparison to the currently achieved reward. If the discount factor equals zero, only the current reward matters to the agent, and no future rewards matter for estimating future Q-values. The discount factor is typically set to a value of about <script type="math/tex">0.95</script>. The last addend in the square brackets is simply the current Q-value estimate again. Thus, the term in the square brackets as a whole expresses the <em>difference between the predicted Q-value and our best estimate for the true Q-value</em>. Bear in mind that obviously also our best estimate for the true Q-value might not be totally perfect since we only know the reward for the next time step <script type="math/tex">R_{t+1}</script> for sure, but this little bit of knowledge helps us to improve the Q-value estimate for the current time step.</p>
+
+<p>This whole difference-term in square brackets is multiplied by the learning rate alpha that weighs how much we trust this estimated error between the best estimate of the true Q-value and the predicted Q-value. The bigger we choose alpha, the more we trust this estimate. The learning rate is typically between <script type="math/tex">0.01</script> and <script type="math/tex">0.0001</script>.</p>
+
+<p>With our understanding of the Q-value update, the loss of a Q-value prediction can be described as follows:</p>
+
+<script type="math/tex; mode=display">\begin{align*}
+\mathcal{L} (\theta) = E_{(s,a,r,s') \sim U(D)} \Big[ \big(r + \gamma \max_{a'} Q(s', a'; \theta^{-}) - Q(s, a; \theta) \big)^2 \Big]
+\end{align*}</script>
+
+<p>Do not let yourself be intimidated by the term before the brackets on the right-hand-side of the equation. This part basically means that we randomly sample a state-action-reward-new_state <script type="math/tex">(s,a,r,s’)</script> tuple from the replay memory called <script type="math/tex">D</script>. The term within the square brackets defines the mean squared error between the actually observed reward r added to all expected future rewards beginning from the next time step (including the discount factor gamma) AND the actually by the neural network predicted Q-value. Pretty simple, right? During training, the prediction of the Q-values should become increasingly better (however, strong fluctuations during learning do usually happen).</p>
+
+<p>These already are the most important bits of math in Deep Q-Learning. We could of course discuss some of the beauty of Linear Algebra and Calculus involved in the Neural Network estimating the Q-values. However, this is beyond the scope of this post and smarter people have done a much better job at explaining this (i.e. the truly awesome <a href="https://www.youtube.com/watch?v=Ilg3gGewQ5U">3Blue1Brown</a>).</p>
+
+<h1 id="problem-statement">Problem statement</h1>
+
+<p>We consider an agent trying to survive in a flappy-bird-like environment. The agent has to find the hole in a moving wall coming its way in order to survive. The goal is to survive as long as possible (sorry, dear agent, but there is no happy end for you). For every time-step the agent receives a reward of 0.1. When the agent learns to maximize its reward, it consequently learns to survive as long as possible and find the holes in the moving walls.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="/images/rl/2.png" alt="" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>White agent and grey moving walls (hard to see in this static image)</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The action space consists of three possible actions: <strong>{Move up, move down, stay}</strong>. The environment consists of an 80-by-80 grey-scale pixel grid. The agent is indicated in grey color, the moving walls are indicated with white color. The agent is supposed to learn optimal behavior by just looking at the raw pixels without any further knowledge about the world. This approach is both the slowest to learn but also the most general approach since no rules have to be hard-coded into the learning system (model-free Reinforcement Learning). During training, the network learns to map the information of the raw pixels of the environment to the Q-values of all three possible actions. The policy we implemented always selects the action with the highest associated Q-value.</p>
+
+<h1 id="code">Code</h1>
+
+<p>Without further ado, let’s have a look at the code. All relevant bits are (hopefully) commented well enough.</p>
+
+<h2 id="environment">Environment</h2>
+
+<p>We could use one of the many pre-defined environments that come with an installation of the OpenAI gym Python package. However, we could also quickly write our own small environment. As already mentioned, I implemented a crappy Flappy Bird clone featuring a square-shaped robot trying to avoid the oncoming walls.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">gym</span>
+<span class="kn">from</span> <span class="nn">gym</span> <span class="kn">import</span> <span class="n">spaces</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">from</span> <span class="nn">gym</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">randint</span>
+
+
+<span class="k">class</span> <span class="nc">Obstacle</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hole_top</span> <span class="o">=</span> <span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hole_bottom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hole_top</span> <span class="o">+</span> <span class="mi">10</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pos_x</span> <span class="o">=</span> <span class="mi">40</span>
+
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hole_top</span> <span class="o">=</span> <span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hole_bottom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hole_top</span> <span class="o">+</span> <span class="mi">10</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pos_x</span> <span class="o">=</span> <span class="mi">40</span>
+
+    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pos_x</span> <span class="o">-=</span> <span class="mi">1</span>  <span class="c"># increment position</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos_x</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c"># reset obstacle if outside environment</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">set_pos_x</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos_x</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pos_x</span> <span class="o">=</span> <span class="n">pos_x</span>
+
+    <span class="k">def</span> <span class="nf">get_pos</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos_x</span>
+
+    <span class="k">def</span> <span class="nf">get_hole</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">hole_top</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hole_bottom</span>
+
+
+<span class="k">class</span> <span class="nc">Robot</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">direction</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">-=</span> <span class="mi">2</span>  <span class="c"># move up</span>
+        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">&lt;</span> <span class="mi">40</span><span class="o">-</span><span class="mi">5</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">+=</span> <span class="mi">2</span>  <span class="c"># move down</span>
+        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span>  <span class="c"># stay</span>
+
+    <span class="k">def</span> <span class="nf">set_height</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">height</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="n">height</span>
+
+    <span class="k">def</span> <span class="nf">get_height</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span>
+
+    <span class="k">def</span> <span class="nf">get_x</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">20</span>
+
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="n">randint</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">35</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">RoadEnv</span><span class="p">(</span><span class="n">gym</span><span class="o">.</span><span class="n">Env</span><span class="p">,</span> <span class="n">utils</span><span class="o">.</span><span class="n">EzPickle</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="kn">from</span> <span class="nn">gym.envs.classic_control</span> <span class="kn">import</span> <span class="n">rendering</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span> <span class="o">=</span> <span class="n">rendering</span><span class="o">.</span><span class="n">SimpleImageViewer</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_action_set</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">}</span>  <span class="c"># go up, go down</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_space</span> <span class="o">=</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Discrete</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_action_set</span><span class="p">))</span>
+
+        <span class="c"># init obstacle</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obstacle</span> <span class="o">=</span> <span class="n">Obstacle</span><span class="p">()</span>
+
+        <span class="c"># init robot</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robby</span> <span class="o">=</span> <span class="n">Robot</span><span class="p">()</span>
+
+    <span class="c"># if game is over, it resets itself</span>
+    <span class="k">def</span> <span class="nf">reset_game</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">robby</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obstacle</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+
+    <span class="c"># a single time step in the environment</span>
+    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
+
+        <span class="n">reward</span><span class="p">,</span> <span class="n">game_over</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">act</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+        <span class="n">ob</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_obs</span><span class="p">()</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">return</span> <span class="n">ob</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">game_over</span><span class="p">,</span> <span class="n">info</span>
+
+    <span class="c"># perform action a</span>
+    <span class="k">def</span> <span class="nf">act</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">obstacle</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robby</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+
+        <span class="n">rob_pos_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robby</span><span class="o">.</span><span class="n">get_height</span><span class="p">()</span>
+        <span class="n">rob_pos_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robby</span><span class="o">.</span><span class="n">get_x</span><span class="p">()</span>
+
+        <span class="n">top</span><span class="p">,</span> <span class="n">bottom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obstacle</span><span class="o">.</span><span class="n">get_hole</span><span class="p">()</span>
+        <span class="n">obstacle_pos_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obstacle</span><span class="o">.</span><span class="n">get_pos</span><span class="p">()</span>
+
+        <span class="n">distance_x</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">rob_pos_x</span> <span class="o">-</span> <span class="n">obstacle_pos_x</span><span class="p">)</span>
+
+        <span class="n">collide_x</span> <span class="o">=</span> <span class="n">distance_x</span> <span class="o">&lt;</span> <span class="mi">5</span>
+        <span class="n">collide_y</span> <span class="o">=</span> <span class="n">rob_pos_y</span> <span class="o">&lt;</span> <span class="n">top</span> <span class="ow">or</span> <span class="p">(</span><span class="n">rob_pos_y</span> <span class="o">+</span> <span class="mi">5</span> <span class="o">&gt;</span> <span class="n">bottom</span><span class="p">)</span>
+
+        <span class="n">game_over</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+        <span class="k">if</span> <span class="n">collide_x</span> <span class="ow">and</span> <span class="n">collide_y</span><span class="p">:</span>
+            <span class="n">game_over</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">reward</span> <span class="o">=</span> <span class="mf">0.1</span>
+
+        <span class="k">return</span> <span class="n">reward</span><span class="p">,</span> <span class="n">game_over</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_n_actions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_action_set</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_game</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_obs</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_get_obs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_image</span>
+
+        <span class="c"># image must be expanded along first dimension for keras</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">img</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_image</span>
+
+        <span class="c"># image must be expanded to 3 color channels to properly show the content</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="c"># show frame on display</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">isopen</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_get_image</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+
+        <span class="n">obstacle_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obstacle</span><span class="o">.</span><span class="n">get_pos</span><span class="p">()</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="mi">4</span>
+
+        <span class="n">img</span><span class="p">[:,</span> <span class="n">obstacle_x</span><span class="p">:</span><span class="n">obstacle_x</span> <span class="o">+</span> <span class="n">width</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">128</span>
+
+        <span class="n">top</span><span class="p">,</span> <span class="n">bottom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obstacle</span><span class="o">.</span><span class="n">get_hole</span><span class="p">()</span>
+
+        <span class="n">img</span><span class="p">[</span><span class="n">top</span><span class="p">:</span><span class="n">bottom</span><span class="p">,</span> <span class="n">obstacle_x</span><span class="p">:</span><span class="n">obstacle_x</span> <span class="o">+</span> <span class="n">width</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">rob_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robby</span><span class="o">.</span><span class="n">get_height</span><span class="p">()</span>
+        <span class="n">rob_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robby</span><span class="o">.</span><span class="n">get_x</span><span class="p">()</span>
+
+        <span class="n">img</span><span class="p">[</span><span class="n">rob_y</span><span class="p">:</span><span class="n">rob_y</span> <span class="o">+</span> <span class="n">width</span><span class="p">,</span> <span class="n">rob_x</span><span class="p">:</span><span class="n">rob_x</span> <span class="o">+</span> <span class="n">width</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">255</span>
+
+        <span class="k">return</span> <span class="n">img</span>
+
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span> <span class="o">=</span> <span class="bp">None</span>
+</code></pre></div></div>
+
+<h2 id="agent">Agent</h2>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">from</span> <span class="nn">tensorflow.keras.models</span> <span class="kn">import</span> <span class="n">Sequential</span>
+<span class="kn">from</span> <span class="nn">tensorflow.keras.layers</span> <span class="kn">import</span> <span class="n">Dense</span><span class="p">,</span> <span class="n">Conv2D</span><span class="p">,</span> <span class="n">Activation</span><span class="p">,</span> <span class="n">Flatten</span>
+<span class="kn">from</span> <span class="nn">tensorflow.keras.optimizers</span> <span class="kn">import</span> <span class="n">Adam</span>
+<span class="kn">from</span> <span class="nn">tensorflow.keras.models</span> <span class="kn">import</span> <span class="n">model_from_yaml</span>
+<span class="kn">from</span> <span class="nn">tensorflow.keras.models</span> <span class="kn">import</span> <span class="n">load_model</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span>
+
+
+<span class="k">class</span> <span class="nc">DQNAgent</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_size</span><span class="p">,</span> <span class="n">action_size</span><span class="p">,</span> <span class="n">model_dir</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_size</span> <span class="o">=</span> <span class="n">state_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_size</span> <span class="o">=</span> <span class="n">action_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">memory</span> <span class="o">=</span> <span class="n">deque</span><span class="p">(</span><span class="n">maxlen</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="mf">0.95</span>  <span class="c"># discount rate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c"># exploration rate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epsilon_min</span> <span class="o">=</span> <span class="mf">0.01</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epsilon_decay</span> <span class="o">=</span> <span class="mf">0.995</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">0.001</span>
+
+        <span class="k">if</span> <span class="n">model_dir</span><span class="p">:</span>
+            <span class="c"># loading stored model archtitecture and model weights</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">model_dir</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># creating model from scratch</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_model</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_build_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">seqmodel</span> <span class="o">=</span> <span class="n">Sequential</span><span class="p">()</span>
+        <span class="n">seqmodel</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Conv2D</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">input_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
+        <span class="n">seqmodel</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Activation</span><span class="p">(</span><span class="s">'relu'</span><span class="p">))</span>
+        <span class="n">seqmodel</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Conv2D</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
+        <span class="n">seqmodel</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Activation</span><span class="p">(</span><span class="s">'relu'</span><span class="p">))</span>
+        <span class="n">seqmodel</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Conv2D</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
+        <span class="n">seqmodel</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Activation</span><span class="p">(</span><span class="s">'relu'</span><span class="p">))</span>
+        <span class="n">seqmodel</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Flatten</span><span class="p">())</span>
+        <span class="n">seqmodel</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
+        <span class="n">seqmodel</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Activation</span><span class="p">(</span><span class="s">'relu'</span><span class="p">))</span>
+        <span class="n">seqmodel</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+
+        <span class="n">adam</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
+        <span class="n">seqmodel</span><span class="o">.</span><span class="nb">compile</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="s">'mse'</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="n">adam</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">seqmodel</span>
+
+    <span class="k">def</span> <span class="nf">remember</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">next_state</span><span class="p">,</span> <span class="n">done</span><span class="p">):</span>
+
+        <span class="c"># store S-A-R-S in replay memory</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">state</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">next_state</span><span class="p">,</span> <span class="n">done</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">act</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">randrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_size</span><span class="p">)</span>
+        <span class="n">act_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+
+        <span class="n">action</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">act_values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">action</span>
+
+    <span class="k">def</span> <span class="nf">replay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">):</span>
+
+        <span class="n">minibatch</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">memory</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">state</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">next_state</span><span class="p">,</span> <span class="n">done</span> <span class="ow">in</span> <span class="n">minibatch</span><span class="p">:</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="n">reward</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">done</span><span class="p">:</span>
+                <span class="n">target</span> <span class="o">=</span> <span class="p">(</span><span class="n">reward</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">*</span>
+                          <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">next_state</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="n">target_f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+            <span class="n">target_f</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">action</span><span class="p">]</span> <span class="o">=</span> <span class="n">target</span>
+
+            <span class="c"># do the learning</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">target_f</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">epsilon_min</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">epsilon_decay</span>
+
+</code></pre></div></div>
+
+<h2 id="training-loop">Training loop</h2>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span>
+<span class="kn">from</span> <span class="nn">RoadEnv</span> <span class="kn">import</span> <span class="n">RoadEnv</span>
+<span class="kn">from</span> <span class="nn">DQNAgent</span> <span class="kn">import</span> <span class="n">DQNAgent</span>
+
+<span class="c"># Initialize environment</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">RoadEnv</span><span class="p">()</span>
+
+<span class="c"># size of input image</span>
+<span class="n">state_size</span> <span class="o">=</span> <span class="mi">80</span> <span class="o">*</span> <span class="mi">80</span> <span class="o">*</span> <span class="mi">1</span>
+
+<span class="c"># size of possible actions</span>
+<span class="n">action_size</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">n</span>
+
+<span class="c"># Deep-Q-Learning agent</span>
+<span class="n">agent</span> <span class="o">=</span> <span class="n">DQNAgent</span><span class="p">(</span><span class="n">state_size</span><span class="p">,</span> <span class="n">action_size</span><span class="p">)</span>
+
+<span class="c"># How many time steps will be analyzed during replay?</span>
+<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">32</span>
+
+<span class="c"># How many time steps should one episode contain at most?</span>
+<span class="n">max_steps</span> <span class="o">=</span> <span class="mi">500</span>
+
+<span class="c"># Total number of episodes for training</span>
+<span class="n">n_episodes</span> <span class="o">=</span> <span class="mi">20000</span>
+
+<span class="n">scores_deque</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+<span class="n">deque_length</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">all_avg_scores</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="n">training</span> <span class="o">=</span> <span class="bp">True</span>
+
+<span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_episodes</span><span class="p">):</span>
+
+    <span class="n">state</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+    <span class="n">reward</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_steps</span><span class="p">):</span>
+        
+        <span class="n">done</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="n">action</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">act</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+        <span class="n">next_state</span><span class="p">,</span> <span class="n">reward_step</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+        <span class="n">reward</span> <span class="o">+=</span> <span class="n">reward_step</span>
+        <span class="n">agent</span><span class="o">.</span><span class="n">remember</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">next_state</span><span class="p">,</span> <span class="n">done</span><span class="p">)</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="n">next_state</span>
+
+        <span class="k">if</span> <span class="n">done</span><span class="p">:</span>
+            <span class="n">scores_deque</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reward</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">scores_deque</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">deque_length</span><span class="p">:</span>
+                <span class="n">scores_deque</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
+
+            <span class="n">scores_average</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">scores_deque</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="n">all_avg_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scores_average</span><span class="p">)</span>
+
+            <span class="k">print</span><span class="p">(</span><span class="s">"episode: {}/{}, #steps: {},reward: {}, e: {}, scores average = {}"</span>
+                  <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">n_episodes</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">agent</span><span class="o">.</span><span class="n">epsilon</span><span class="p">,</span> <span class="n">scores_average</span><span class="p">))</span>
+            <span class="k">break</span>
+
+    <span class="k">if</span> <span class="n">training</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">memory</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">batch_size</span><span class="p">:</span>
+            <span class="n">agent</span><span class="o">.</span><span class="n">replay</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
+</code></pre></div></div>
+
+<hr />
+
+<p>As always, you may find the complete code in the project <a href="https://github.com/jzuern/robot-rl">GitHub repository</a>.</p>
+
+<h1 id="results">Results</h1>
+
+<p>Let us look at one episode of the agent playing without any training:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="/images/rl/3.gif" alt="" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>Random actions of untrained agent (sorry about the GIF artefacts)</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The agent selects actions at random as it cannot yet correlate the pixel grid with appropriate Q-values of the agent’s actions.</p>
+
+<p>Pretty bad performance, I would say. How well does the agent perform after playing 20000 episodes? Let’s have a look:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="/images/rl/4.gif" alt="" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">**</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>We begin to see intelligent behavior. The agent steers towards the holes once it is close enough. However, even after several thousands of episodes, the agent sooner or later crashes into one of the moving walls. It might be necessary to increase the number of training episodes to 100,000.</p>
+
+<h2 id="averaged-reward-plot">Averaged reward plot</h2>
+
+<p>The averaged reward plot helps us to understand the training progress of the agent.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="/images/rl/5.png" alt="" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>Rolling average of rewards plotted over the episode number</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>A clear upward trend of the rolling average of the reward can be made out. Strong fluctuations of rewards are a typical observation in Reinforcement Learning. Other environments may lead to even stronger fluctuations, so do not let yourself be crushed if your rewards do not seem increase during training. Just wait a little longer!</p>
+
+<p>That’s all I wanted to talk about for today. Please find the following exemplary resources if you want to dive deeper into the topic of Reinforcement Learning:</p>
+
+<h1 id="further-reading">Further reading</h1>
+
+<p>This post was greatly inspired by the following resources:</p>
+
+<ul>
+  <li><a href="https://lilianweng.github.io/lil-log/2018/02/19/a-long-peek-into-reinforcement-learning.html">[1] Lilian Weng — A (Long) Peek into Reinforcement Learning</a></li>
+  <li><a href="https://karpathy.github.io/2016/05/31/rl/">[2] Andrey Karpathy — Deep Reinforcement Learning: Pong from Pixels</a></li>
+  <li><a href="https://www.amazon.com/Hands-Machine-Learning-Scikit-Learn-TensorFlow/dp/1491962291/ref=sr_1_3?ie=UTF8&amp;qid=1542788485&amp;sr=8-3">[3] Aurélien Géron — Hands-On Machine Learning with Scikit-Learn &amp; TensorFlow</a></li>
+</ul>
+
+<hr />
+
+<p>Thanks for reading and happy learning learning!📈💻🎉</p>
+
+  </div>
+  <!-- Previous / Next Buttons -->
+  <div class="pagenav">
+    
+    <div class="wrapper" id="left">
+      <small><b>Previous</b> Nov 7, 2018</small>
+      <br>
+      <a class="no-hov" href="/2018/11/colab-tpu.html">&laquo; Using a TPU in Google Colab</a>
+    </div>
+    
+    
+    <div class="wrapper" id="right">
+      <small>Feb 20, 2019 <b>Next</b></small>
+      <br>
+      <a class="no-hov" href="/2019/02/autoencoder.html">But what exactly are Autoencoders? &raquo;</a>
+    </div>
+    
+  </div>
+  <!-- Disqus comments view -->
+  
+</article>
+
+
+  <div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        
+        s.src = 'https://jzuern-github-io.disqus.com/embed.js';
+        
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
+  </div>
+  <footer class="c-page__footer">
+  <p>&copy; Jannik Zürn 2020</p>
+  <p><a href="https://github.com/jzuern">Github</a></p>
+</footer>
+
+</div>
+
+
+
+<script type="text/javascript"
+    src="https://cdn.mathjax.org/mathjax/latestMathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+    </main>
+    
+  </body>
+</html>
+
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>

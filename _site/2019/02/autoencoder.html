@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>But what exactly are Autoencoders? - jzuern.github.io</title>
+  <meta name="description" content="In today’s post I would like to give you a quick-and-dirty introduction into a neural network architecture type called Autoencoders. The post is aimed at Mac...">
+  <link href='https://fonts.googleapis.com/css?family=Roboto+Mono|Roboto:300,400,900,400italic' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://localhost:4000/2019/02/autoencoder.html">
+  <link rel="alternate" type="application/rss+xml" title="jzuern.github.io" href="http://localhost:4000/feed.xml">
+</head>
+
+  <body>
+    <main class="u-container">
+      <div class="c-page">
+  <header class="c-page__header">
+  <h1><code>jzuern.github.io</code></h1>
+  
+  <p>
+    <a href="/">Home</a><span
+          class="u-separate"></span> <a href="/research/">Research</a><span class="u-separate"><span class="u-separate"></span><a href="/projects/">Projects</a><span class="u-separate"></span> <a href="/about/">About</a><span class="u-separate"></span><a href="/feed.xml">RSS</a>
+  </p>
+</header>
+
+  <div class="c-page__main">
+    <article class="c-article">
+  <header class="c-article__header">
+    <h1 class="c-article__title">But what exactly are Autoencoders?</h1>
+    <p class="c-article__time"><time datetime="2019-02-20T00:00:00+01:00" itemprop="datePublished">Feb 20, 2019</time></p>
+  </header>
+  <!-- Post Tags -->
+  <ul class="c-tags">
+    
+    <li class="c-tag">blog</li>
+    
+  </ul>
+  <div class="c-article__main">
+    <p>In today’s post I would like to give you a quick-and-dirty introduction into a neural network architecture type called Autoencoders. The post is aimed at Machine Learning beginners who would like get some basic insights into Autoencoders and why they are so useful.</p>
+
+<h2 id="concept">Concept</h2>
+
+<p>Autoencoders are structured to take an input, transform this input into a different representation, an <em>embedding</em> of the input. From this embedding, it aims to reconstruct the original input as precicely as possible. It basically tries to copy the input. The layers of the autoencoder that create this embedding are called the <strong>encoder</strong>, and the layers that try to reconstruct the embedding into the original input are called <strong>decoder</strong>. Usually Autoencoders are restricted in ways that allow them to copy only approximately. Because the model is forced to prioritize
+which aspects of the input should be copied, it often learns useful properties of the data.</p>
+
+<hr />
+
+<p>More formally, an autoencoder describes a nonlinear mapping of an input <script type="math/tex">\mathbf{x}</script> into an output <script type="math/tex">\tilde{\mathbf{x}}</script> using an intermediate representation <script type="math/tex">x_{encoded} = f_{encode}(\mathbf{x})</script>, also called an <em>embedding</em>. The embedding is typically denoted as <script type="math/tex">h</script> (h for hidden, I suppose). During training, the encoder learns a nonlinear mapping of <script type="math/tex">\mathbf{x}</script> into <script type="math/tex">\mathbf{x}_{encoded}</script>. The decoder, on the other hand, learns a nonlinear mapping from <script type="math/tex">x_{encoded}</script> into the original space. The goal of training is to minimize a loss. This loss describes the objective that the autoencoder tries to reach. When our goal is to merely reconstrut the input as accurately as possible, two major types of loss function are typically used: Mean squared error and Kullback-Leibler (KL) divergence.</p>
+
+<p>The <strong>mean squared error (MSE)</strong> is (as its name already suggests) defined as the mean of the squared difference between our network output and the ground truth. When the encoder output is a grid of values <em>a.k.a. an image</em>, the MSE between output image <script type="math/tex">\bar{I}</script> and ground truth image <script type="math/tex">I</script> may be defined as</p>
+
+<script type="math/tex; mode=display">\begin{align*}
+MSE = \frac{1}{NM} \sum_i^N \sum_j^M ( \bar{I}_{ij} - I_{ij} )^2
+\end{align*}</script>
+
+<p>The notion of <strong>KL divergence</strong> comes originally from information theory and describes the relative entropy between two probability distributions <script type="math/tex">p</script> and <script type="math/tex">q</script>. Because the KL divergence is non-negative and measures the difference between two distributions, it is often conceptualized as measuring some sort of distance between these distributions.</p>
+
+<p>The KL divergence has many useful properties, most notably that it is non-negative. The KL divergence is 0 if and only if <script type="math/tex">p</script> and <script type="math/tex">q</script> are the same distribution in the case of discrete variables, or equal <em>almost everywhere</em> in the case of continuous variables. It is defined as:</p>
+
+<script type="math/tex; mode=display">\begin{align*}
+D_{KL} (p || q) = - \sum_x p(x) \log \Bigg( \frac{q(x)}{p(x)} \Bigg)
+\end{align*}</script>
+
+<p>In the context of Machine Learning, minimizing the KL divergence means to make the autoencoder sample its output from a distribution that is similar to the distribution of the input, which is a desirable property of an autoencoder.</p>
+
+<h2 id="autoencoder-flavors">Autoencoder Flavors</h2>
+
+<p>Autoencoders come in many different flavors. For the purpose of this post, we will only discuss the most important concepts and ideas for autoencoders. Most Autoencoders you might encounter in the wild are <em>undercomplete</em> autoencoders. This means that the condensed representation of the input can hold less information than the input has. If your input has <script type="math/tex">N</script> dimensions, and some hidden layer of your autoencoder has only  <script type="math/tex">% <![CDATA[
+X < N %]]></script> dimensions, your autoencoder is undercomplete. Why would you want to hold less information in the hidden layer than your input might contain? The idea is that restricting the amount of information the encoder can put into the the encoded representation forces it to only focus on the relevant and discriminative information within the input since this allows the decoder to reconstruct the input as best as possible. Undercomplete autoencoder <em>boil the information down</em> into the most essential bits. It is a form of <em>Dimensionality reduction</em>.</p>
+
+<p>Now, let us discuss some flavors of autoencoders that you might encounter “in the wild”:</p>
+
+<h3 id="vanilla-autoencoder">Vanilla Autoencoder</h3>
+
+<p>The most basic example of an autoencoder may be defined with an input layer, a hidden layer, and an output layer:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="/images/autoencoder/vanilla.png" alt="" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>A simple autoencoder (image credit: <a href="https://pythonmachinelearning.pro/all-about-autoencoders/">[2]</a>)</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The Input layer typically has the same dimensions as the output layer since we try to reconstruct the content of the input, while the hidden layer has a smaller number of dimensions that input or output layer.</p>
+
+<h3 id="sparse-autoencoder">Sparse Autoencoder</h3>
+
+<p>However, depending on the purpose of the encoding scheme, it can be useful to add an additional term to the loss function that needs to be satisfied as well.</p>
+
+<p>Sparse autoencoders, as their name suggests, enforce sparsity on the embedding variables. This can be achieved by means of a sparsity penalty <script type="math/tex">\Omega(\mathbf{h})</script> on the embedding layer <script type="math/tex">\mathbf{h}</script>.</p>
+
+<script type="math/tex; mode=display">\begin{align*}
+loss = \mathcal{L}(f_{encode}(f_{decode}(\mathbf{x})), \mathbf{x}) + \Omega(\mathbf{h})
+\end{align*}</script>
+
+<p>The operator <script type="math/tex">\mathcal{L}</script> denotes an arbitray distance metric (i.e. MSE or KL-divergence) between input and output. The sparsity penalty may be expressed the <script type="math/tex">L_1</script>-norm of the hidden layer weights:</p>
+
+<script type="math/tex; mode=display">\begin{align*}
+\Omega(\mathbf{h}) = \lambda \sum_i | h_i |
+\end{align*}</script>
+
+<p>with a scaling parameter <script type="math/tex">\lambda</script>. Enforcing sparsity is a form of regularization and can improve the generalization abilities of the autoencoder.</p>
+
+<h3 id="denoising-autoencoder">Denoising Autoencoder</h3>
+
+<p>As the name suggests, a <em>denoising</em> autoencoder is able to robustly remove noise from images. How can it achieve this property? It finds feature vectors that are somewhat invariant to noise in the input (within a reasonable <a href="https://en.wikipedia.org/wiki/Signal-to-noise_ratio">SNR</a>).</p>
+
+<p>A denoising autoencoder can very easily be constructed by modifying the loss function of a vanilly autoencoder. Instead of calculating the error between the original input <script type="math/tex">\mathbf{x}</script> and the reconstructed input <script type="math/tex">\tilde{\mathbf{x}}</script>, we calculate the error between the original input and the reconstruction of an input <script type="math/tex">\hat{\mathbf{x}}</script> that was corrupted by some form of noise. For a MSE loss definition, this can be defined as:</p>
+
+<script type="math/tex; mode=display">\begin{align*}
+loss = \mathcal{L} \big( \mathbf{x}, f_{encode}(f_{decode}(\hat{\mathbf{x}})) \big)
+\end{align*}</script>
+
+<p>Denoising autoencoders learn undo this corruption rather than simply copying their input.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="/images/autoencoder/denoised_digits.png" alt="" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>Denoised images (Source: <a href="https://blog.keras.io/building-autoencoders-in-keras.html">[1]</a>)</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="contractive-autoencoder">Contractive Autoencoder</h3>
+
+<p>A contrative autoencoder is another subtype of a sparse autoencoder (we impose an additional constraint on the reconstruction loss). For this type of autoencoder, we penalize the weights of the embedding layer by</p>
+
+<script type="math/tex; mode=display">\begin{align*}
+\Omega(\mathbf{h}) = \lambda \sum_i  ||\nabla_x h_i||^2
+\end{align*}</script>
+
+<p>The operator <script type="math/tex">\nabla</script> denotes the Nabla-operator, meaning a gradient. Specifically, we penalize large gradients of the hidden layer activations <script type="math/tex">h_i</script> w.r.t the input <script type="math/tex">x</script>. But what purpose might this constraint have?</p>
+
+<p>Loosely speaking, it lets infinitesimal changes w.r.t. the input <script type="math/tex">\mathbf{x}</script> not have any influence on the embedding variables. If make small changes to the pixel intensities of the input images, we do not want any changes to the embedding variables. It is encouraged to map a <strong>local neighborhood of input points</strong> to a <strong>smaller local neighborhood of output points</strong>.</p>
+
+<p>And what is this useful for, you ask? The goal of the CAE is to learn the manifold structure of the data in the high-dimensional input space. For example, a CAE applied to images should learn tangent vectors that show how the image changes as objects in the image gradually change pose. This property would not be emphasised as much in a standard loss function.</p>
+
+<h3 id="variational-autoencoder">Variational Autoencoder</h3>
+
+<blockquote>
+  <p>Variational Autoencoders (VAE) learn a <strong>latent variable model</strong> for its input data
+So instead of letting your neural network learn an arbitrary function, you are learning the parameters of a probability distribution modeling your data. If you sample points from this distribution, you can generate new input data samples: a VAE is a “generative model”. [<a href="https://blog.keras.io/building-autoencoders-in-keras.html">1</a>]</p>
+</blockquote>
+
+<p>In contrast to a “normal” autoencoder, a VAE turns a sample not into one parameter (the embedding representation), but in two parameters <script type="math/tex">z_{\mu}</script> and <script type="math/tex">z_{\sigma}</script>, that describe the mean and the standard deviation of a latent normal distribution that is assumed to generate the data the VAE is trained on.</p>
+
+<p>The parameters of the model are trained via two loss terms: a reconstruction loss forcing the decoded samples to match the initial inputs (just like in our previous autoencoders), and the KL divergence between the learned latent distribution and the prior distribution, acting as a regularization term.</p>
+
+<p>For a proper introduction into VAEs, see for instance <a href="https://wiseodd.github.io/techblog/2016/12/10/variational-autoencoder/">[3]</a>.</p>
+
+<h1 id="experiments">Experiments</h1>
+
+<h2 id="2d-manifold-embedding">2D-Manifold Embedding</h2>
+
+<p>Let us now see how we can embed data in some latent dimensions. In this first experiment, we will strive for something very simple. We first create a super monotonous dataset consisting of many different images of random blocks with different heights and widths, we will call it the <strong>block image dataset</strong>.</p>
+
+<p align="center">
+  <img src="/images/autoencoder/5.png" />
+</p>
+
+<p>Let us train a VAE with only two latent dimensions on 80000 of these block images and see what happens. I chose to use only two latent dimensions because each image can be visualized by the location of its latent embedding vector in a 2-D plane.</p>
+
+<p>The figure below shows which feature vector in the 2-D plane corresponds to which block image. The block image is drawn at the location where its feature vector lies in the 2-D plane.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="/images/autoencoder/digits_over_latent.png" alt="" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>Sampling the 2-D latent features on a uniform grid</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>It is quite obvious that the autoencoder was able to find a mapping that makes a lot of sense for our dataset. Recall that each input datum (a single image) has <script type="math/tex">height \cdot width \cdot channels = 28 \cdot 28 \cdot 1 = 784</script> dimensions. The autoencoder was able to reduce the dimensionality of the input to only two dimensions without losing a whole lot of information since the output is visually almost indistinguishable from the input (apart from some minor artefacts). This astounding reconstruction quality is possible since each input image is so easy to describe and does not contain very much information. Each white block can be described by only two parameters: height and width. Not even the center of each block is parametrized since each block is located exactly in the center of each image.</p>
+
+<p>If you want to play around with this yourself, you can find the code <a href="https://gist.github.com/jzuern/41a6380f885e04a6f1f60e4aa216dd3f">here</a>. Most of the code was taken from the <a href="https://github.com/keras-team/keras/blob/master/examples/variational_autoencoder.py">Keras github repository</a>.</p>
+
+<h2 id="similar-image-retrieval">Similar image retrieval</h2>
+
+<p>While embedding those simple blocks might seem like a nice gimmick, let us now see how well an autoencoder actually performs on a real-world dataset: <strong>Fashion MNIST</strong>.
+Our goal here is to find out how descriptive the embedding vectors of the input images are. Autoencoders allow us to compare visual image similarity by comparing the similarity of their respective embeddings or <strong>features</strong> created by the Autoencoder.</p>
+
+<p>As the Fashion MNIST images are much more information-dense than the block-images from our last mini experiment, we assume that we need more latent variables in order to express the gist of each of the training images. I chose a different autoencoder architecture with 128 latent dimensions.</p>
+
+<p>The idea is to to create a feature vector for a query image for which we want similar results from a database. Below we can see an exemplary query image of a (very low-res) pair of jeans.</p>
+
+<p align="center">
+  <img src="/images/autoencoder/query1.png" />
+</p>
+
+<p>Using our autoencoder that was trained on the Fashion MNIST dataset, we want to retrieve the images corresponding to the features that are closest to the query image features in the embedding space. But how can we compare the <strong>closeness</strong> of two vectors? For this kind of task, one typically uses the <a href="https://en.wikipedia.org/wiki/Cosine_similarity"><strong>cosine distance</strong></a> between the vectors as a distance metric.</p>
+
+<p>Here are the four closest neighbors of the query image in feature space:</p>
+
+<p align="center">
+  <img src="/images/autoencoder/results1.png" />
+</p>
+
+<p>Nice! Pants are similar to pants, I guess!</p>
+
+<p>Lets try again with a new query image:</p>
+
+<p align="center">
+  <img src="/images/autoencoder/query2.png" />
+</p>
+
+<p>And here are the four closest neighbors:</p>
+
+<p align="center">
+  <img src="/images/autoencoder/results2.png" />
+</p>
+
+<p>Cool! The autoencoder was definitely able to encode the relevant information of each input image in the embedding layer.</p>
+
+<p><strong>Note</strong>: You should bear in mind that the autoencoder was not trained with any labels for the images. It does not “know” that these are images of shirts. In only knows that the abstract features of all of these images are roughly similar and highly descriptive of the actual image content.</p>
+
+<p>If you want to play around with this yourself, the code may be found <a href="https://gist.github.com/jzuern/c8a1ac0a9516890f7945146c188415db">here</a>.</p>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>We have seen how autoencoders can be constructed and what types of autoencoders have been proposed in the last couple of years.</p>
+
+<p>The ability of Autoencoders to encode high-level image content information in a dense, small feature vector makes them very useful for unsupervised pretraining. We can automatically extract highly useful feature vectors from input data completely unsupervised. Later we may use these feature vectors to train an off-the-shelf classifier with these features and observe highly competitive results.</p>
+
+<p>This aspect is especially useful for learning tasks where there is not very much labeled data but very much unlabeled data.</p>
+
+<p>Thanks for reading and happy autoencoding! 👨‍💻🎉</p>
+
+<h1 id="resources">Resources</h1>
+
+<ul>
+  <li>[1]: <a href="https://blog.keras.io/building-autoencoders-in-keras.html">https://blog.keras.io/building-autoencoders-in-keras.html</a></li>
+  <li>[2]: <a href="https://pythonmachinelearning.pro/all-about-autoencoders">https://pythonmachinelearning.pro/all-about-autoencoders</a></li>
+  <li>[3]: <a href="https://wiseodd.github.io/techblog/2016/12/10/variational-autoencoder/">https://wiseodd.github.io/techblog/2016/12/10/variational-autoencoder/</a></li>
+</ul>
+
+  </div>
+  <!-- Previous / Next Buttons -->
+  <div class="pagenav">
+    
+    <div class="wrapper" id="left">
+      <small><b>Previous</b> Nov 24, 2018</small>
+      <br>
+      <a class="no-hov" href="/2018/11/rl.html">&laquo; Reinforcement Learning — An introduction</a>
+    </div>
+    
+    
+    <div class="wrapper" id="right">
+      <small>Apr 5, 2019 <b>Next</b></small>
+      <br>
+      <a class="no-hov" href="/2019/04/tensorflow2.html">What's new with TensorFlow 2.0? &raquo;</a>
+    </div>
+    
+  </div>
+  <!-- Disqus comments view -->
+  
+</article>
+
+
+  <div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        
+        s.src = 'https://jzuern-github-io.disqus.com/embed.js';
+        
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
+  </div>
+  <footer class="c-page__footer">
+  <p>&copy; Jannik Zürn 2020</p>
+  <p><a href="https://github.com/jzuern">Github</a></p>
+</footer>
+
+</div>
+
+
+
+<script type="text/javascript"
+    src="https://cdn.mathjax.org/mathjax/latestMathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+    </main>
+    
+  </body>
+</html>
+
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>

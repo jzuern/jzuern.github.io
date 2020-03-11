@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Neural Networks for Steady-State Fluid Flow Prediction : Part 1 - jzuern.github.io</title>
+  <meta name="description" content="This article aims to give a broad overview of how neural networks, Fully Convolutional neural networks in specific, are able to learn fluid flow around an ob...">
+  <link href='https://fonts.googleapis.com/css?family=Roboto+Mono|Roboto:300,400,900,400italic' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://localhost:4000/2018/04/flow1.html">
+  <link rel="alternate" type="application/rss+xml" title="jzuern.github.io" href="http://localhost:4000/feed.xml">
+</head>
+
+  <body>
+    <main class="u-container">
+      <div class="c-page">
+  <header class="c-page__header">
+  <h1><code>jzuern.github.io</code></h1>
+  
+  <p>
+    <a href="/">Home</a><span
+          class="u-separate"></span> <a href="/research/">Research</a><span class="u-separate"><span class="u-separate"></span><a href="/projects/">Projects</a><span class="u-separate"></span> <a href="/about/">About</a><span class="u-separate"></span><a href="/feed.xml">RSS</a>
+  </p>
+</header>
+
+  <div class="c-page__main">
+    <article class="c-article">
+  <header class="c-article__header">
+    <h1 class="c-article__title">Neural Networks for Steady-State Fluid Flow Prediction : Part 1</h1>
+    <p class="c-article__time"><time datetime="2018-04-06T00:00:00+02:00" itemprop="datePublished">Apr 6, 2018</time></p>
+  </header>
+  <!-- Post Tags -->
+  <ul class="c-tags">
+    
+    <li class="c-tag">blog</li>
+    
+  </ul>
+  <div class="c-article__main">
+    <p>This article aims to give a broad overview of how neural networks, Fully Convolutional neural networks in specific, are able to learn fluid flow around an obstacle by learning from examples.</p>
+
+<p>This series is divided into three parts.</p>
+
+<p><strong>Part 1: A data-driven approach to CFD</strong> (this post)</p>
+
+<p><strong>Part 2: <a href="https://jzuern.github.io/2018/05/flow2.html">Implementation details</a></strong></p>
+
+<p><strong>Part 3: <a href="https://jzuern.github.io/2018/07/flow3.html">Results</a></strong></p>
+
+<h1 id="introduction">Introduction</h1>
+
+<p>Solving fluid flow problems using computational fluid dynamics (CFD) can be demanding both in terms of computer hardware and simulation time. Artificial neural networks (ANNs) are universal approximators and are capable of learning nonlinear dependencies between many variables. This article aims to apply artificial neural networks to solve fluid flow problems in order to significantly decreased time-to-solution while preserving much of the accuracy of a full-fledged CFD solution.</p>
+
+<p>An important observation to be made for laminar flow is the fact that the fuid flow at a certain point within the simulation domain is mainly dependent on the flow in its immediate neighborhood, though not heavily dependent on more distant areas in the simulation domain. If the fluid flow in an area changes due to a modified geometry of an obstacle for the fluid, one may expect to see a difference in the immediate neighborhood of this area, but no substantial change to the overall ow behavior in more distant parts of the simulation domain. State-of-the-art numerical solvers do not take advantage of the immediate relationship between small changes in obstacle shape and resulting small changes in flow behavior. They have no “memory” of previous simulations. This work argues that such a memory of previous simulations in combination with learning the connection between simulated geometry and developed fluid flow can be learned by an Artificial Neural Network. Given enough training data for the ANN and a well-suited network architecture, the neural network can be expected to be able to predict flow fields around previously not seen geometries with a hopefully high accuracy. The immense speed in fluid flow estimation once the network was trained gives this data-driven approach to CFD advantages in terms of computation speed under certain conditions.</p>
+
+<h1 id="creating-training-data">Creating training data</h1>
+
+<p>The neural network should be able to predict fluid flow behavior based merely on the geometry of the object. For the sake of simplicity, this work solely focuses on making the network predict the fluid velocity vectors. Other important field quantities such as density or pressure will not be part of the network training data but may in principle be taken into account as well.</p>
+
+<p>In order to create a training set that is diverse enough in terms of obstacle shapes, obstacle orientation and obstacle size, a way to create geometries of different kinds and shapes had to be found. The shapes had not only to be diverse enough to let the neural network learn the dependencies between different kinds of shapes and their respective surrounding flowfields, but they also had be mesh-able without the need for custom meshing parameters depending on the concrete geometry topology. Due to these constraint, this work focused on creating random two-dimensional polygons. In order to avoid visualization artifacts and to create smooth surfaces, the sharp corners of the obstacle surfaces are smoothed with a laplacian smoothing operation.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="/images/flow1/1.png" alt="" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>Some smoothed polygons used as training data</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>A critical question to address is how the geometry of the simulation setup can be represented for the neural network. In order to simulate the fluid flow around a specific geometry, it has to be converted into a mesh. This mesh is composed of primitive elements such as tetrahedra or cubes. Slightly modifying the simulated geometry or changing meshing parameters such as element size can substantially change the single element parameters and the total number of elements in the mesh. Fully Convolutional neural networks are designed to only handle input objects of the same size. A straightforward way to map an arbitrary mesh to a regular grid of values is to voxelize it. This is achieved by overlaying the mesh with a regular grid and assigning a value to each of the grid cells depending on the content of the mesh at this point. This process is called voxelization. The grid has the same dimensions for every input geometry and thus allows for one single network architecture for all input geometries while preserving details of the geometry topology.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="/images/flow1/2.png" alt="" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>Fluid velocity in vertical y-direction</em></td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><img src="/images/flow1/22.png" alt="" /></td>
+    </tr>
+  </tbody>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>Fluid velocity in horizontal x-direction</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The simulation data is voxelized in the same fashion. Thus, the simulation data consists of a tensor of shape [height, width, 2] for there are two velocity components to a two-dimensional velocity vector.</p>
+
+<p>The whole work-flow for training-data creation can be summarized as follows:</p>
+
+<ol>
+  <li>
+    <p><strong>Geometry generation</strong>: Different obstacle geometries with varying shapes are created. They are exported as STL files for later import into a meshing program and also as a numpy array containing the voxel grid of the geometry.</p>
+  </li>
+  <li>
+    <p><strong>OpenFOAM case setup</strong>: This second step creates a geometry-specific OpenFOAM case from a template case and inserts the geometry that was created in step 1.</p>
+  </li>
+  <li>
+    <p><strong>Meshing</strong>: Meshing of the created obstacle geometry.</p>
+  </li>
+  <li>
+    <p><strong>Simulation</strong>: Simulating the concrete OpenFOAM test case. The simulation may reach an end once a convergence criteria is fulfilled. This might be a maximum number of steps or a negligible residuum.</p>
+  </li>
+  <li>
+    <p><strong>Post-processing</strong>: In this step, the OpenFOAM case results are converted into the VTK file format and a pixel/voxel grid of the results is created with paraView and saved to disk.</p>
+  </li>
+</ol>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="/images/flow1/3.png" alt="" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>Generic Open-FOAM simulation setup. The fluid streams into the simulation domain through the inlet, goes around the obstacle and leaves the simulation box through the outlet.</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Generic Open-FOAM simulation setup. The fluid streams into the simulation domain through the inlet, goes around the obstacle and leaves the simulation box through the outlet.</p>
+
+<h1 id="network-architecture">Network architecture</h1>
+
+<p>Fully Convolutional neural networks (FCNs) are widely used for image segmentation tasks where each pixel of the input image is assigned to a class. Each class corresponds to a type of detected object, i.e. car, pedestrian or dog. This property is achieved by first scaling the input image down and applying convolutional and pooling operations just like a Convlutional Neural Network (CNN). However, in contrast to CNNs, afterwards in a second step, the image is scaled up again using so-called deconvolutional operations (also known as transposed convolution) while preserving the assigned labels to each pixel. Deconvolution layers are identical to convolution layers, if the input and output nodes are switched. FCNs are therefore able to take an input of arbitrary shape and assign a numerical value to each of the entries of the input tensor based on the training samples it was given during training.</p>
+
+<blockquote>
+  <p>Thus, a FCN could be able to take a voxel grid of an obstacle, try to predict the fluid flow around the obstacle and compare it with the ground-truth data coming from the OpenFOAM simulation.</p>
+</blockquote>
+
+<p>The network architecture which was used for this thesis was adapted from (this implementation)[https://github.com/loliverhennigh/Steady-State-Flow-With-Neural-Nets].</p>
+
+<p>The network architecture is kept all convolutional and takes advantage of both residual connections and a U-Network architecture. This proved to drastically improve accuracy while maintaining fast computation speeds. In the context of fluid flow prediction, the task of the network is to assign a floating point number to each pixel of the input tensor, representing the fluid flow velocity at this position.</p>
+
+<p>Since the fluid velocity vector has two components in two dimensions, the FCN outputs two tensors, one for the flow velocity in x-direction and the other one corresponds to the flow velocity in y-direction. Concretely, the output of the neural net is a tensor with dimensions [batchsize, width, height; 2]. The network makes use of several components that have been inspired by PixelCNN++.</p>
+
+<h1 id="limitations">Limitations</h1>
+
+<p>Laminar fluid flow follows a predictable pattern given a geometry through or around which the fluid flows and a suitable neural network might be able to pick up the complex nonlinear dependencies between simulated geometry and final fluid flow. The structure of fluid flow in reality does not only depend on the shape of obstacles but also on fluid properties such as viscosity, density, and temperature. Other parameters include the type of boundary condition, chemical reactions, and many more. Partially turbulent flows or even fully turbulent flows with higher Reynolds numbers exhibit a much more complex behavior that cannot expected to be modeled by a data-driven approach to CFD.</p>
+
+<p>A physically accurate model of fluid flow accounts for the field quantities flow velocities <script type="math/tex">v(x)</script>, density <script type="math/tex">\rho(x)</script>, pressure <script type="math/tex">p(x)</script> and inner energy <script type="math/tex">e(x)</script>. In a laminar setup with low flow speeds and no chemical reaction occurring, however,density, pressure, and energy of the fluid are distributed approximately uniformly within the simulation domain and can thus be neglected. Thus, we focused only on fluid flow velocity components in our data-driven approach.</p>
+
+<p>In this work, specific constant fluid parameters and boundary conditions were chosen for the generation of training samples. As a consequence, the learned dependencies between simulated geometry and fluid flow are only valid for a small subset of simulation setups where the simulation parameters are equal or close to the ones used for the creation of the training data set. As these simulation parameters are not encoded into any of the inputs of the neural network in our approach, we do not expect the network to be able to generalize to simulation parameters it was not trained on previously.</p>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>We saw that given suitable training data, a Fully Convolutional Neural Network is able to learn laminar fluid flow behavior.</p>
+
+<p>Special thanks to <a href="https://github.com/loliverhennigh">Oliver Hennigh</a>, who made an awesome implementation of a Fully Convolutional Neural Network for fluid flow prediction, which was a huge inspiration for me.</p>
+
+  </div>
+  <!-- Previous / Next Buttons -->
+  <div class="pagenav">
+    
+    
+    <div class="wrapper" id="right">
+      <small>May 10, 2018 <b>Next</b></small>
+      <br>
+      <a class="no-hov" href="/2018/05/flow2.html">Neural Networks for Steady-State Fluid Flow Prediction : Part 2 &raquo;</a>
+    </div>
+    
+  </div>
+  <!-- Disqus comments view -->
+  
+</article>
+
+
+  <div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        
+        s.src = 'https://jzuern-github-io.disqus.com/embed.js';
+        
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
+  </div>
+  <footer class="c-page__footer">
+  <p>&copy; Jannik Zürn 2020</p>
+  <p><a href="https://github.com/jzuern">Github</a></p>
+</footer>
+
+</div>
+
+
+
+<script type="text/javascript"
+    src="https://cdn.mathjax.org/mathjax/latestMathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+    </main>
+    
+  </body>
+</html>
+
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>

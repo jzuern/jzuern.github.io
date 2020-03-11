@@ -16,6 +16,8 @@ In my daily reseach I aim at bringing Robotics and Artificial Intelligence, espe
 Below you may find a chronological list of my publications:
 
 
+- [2020] J Vertens, J Zürn, W Burgard: *HeatNet: Bridging the Day-Night Domain Gap in Semantic Segmentation with Thermal Images* <br/> [ArXiv preprint](https://arxiv.org/abs/2003.04645)
+
 
 - [2019] J Zürn, W Burgard, A Valada: *Self-Supervised Visual Terrain Classification from Unsupervised Acoustic Feature Learning* <br/> [ArXiv preprint](https://arxiv.org/abs/1912.03227)
 
@@ -43,7 +45,7 @@ I have supervised a number of theses of very bright students:
 
 ## Lectures
 
-I have participated in the following lectures:
+I have participated as instructor or lecturer in the following courses:
 
 2019 Summer Term: [Deep Learning Lab](http://ais.informatik.uni-freiburg.de/teaching/ss19/deep_learning_lab/)
 
