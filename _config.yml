@@ -24,6 +24,9 @@ sass:
 
 exclude: [vendor]
 
+background-image: url('/about/assets/me.jpg')
+
+
 
 # Disqus Comments
 disqus:

@@ -5,9 +5,71 @@
     <description>A playground for everything interesting and irrelevant.</description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sat, 04 Jan 2020 17:50:50 +0100</pubDate>
-    <lastBuildDate>Sat, 04 Jan 2020 17:50:50 +0100</lastBuildDate>
+    <pubDate>Sat, 28 Mar 2020 13:09:11 +0100</pubDate>
+    <lastBuildDate>Sat, 28 Mar 2020 13:09:11 +0100</lastBuildDate>
     <generator>Jekyll v3.6.3</generator>
+    
+      <item>
+        <title>HeatNet: Bridging the Day-Night Domain Gap in Semantic Segmentation with Thermal Images</title>
+        <description>&lt;center&gt;&lt;iframe width=&quot;640&quot; height=&quot;360&quot; src=&quot;http://thermal.cs.uni-freiburg.de/static/images/approach.mp4&quot; frameborder=&quot;0&quot; allowfullscreen=&quot;&quot;&gt;&lt;/iframe&gt;&lt;/center&gt;
+
+&lt;p&gt;Today, we will discuss our most recent paper &lt;strong&gt;&lt;em&gt;HeatNet: Bridging the Day-Night Domain Gap in Semantic Segmentation with Thermal Images&lt;/em&gt;&lt;/strong&gt; (by Johan Vertens, Jannik Zürn, and Wolfram Burgard). This post serves as a quick and dirty introduction to the topic and to the work itself. For more details, please refer to the original publication, which is available here and the project website will be available soon at &lt;a href=&quot;http://thermal.cs.uni-freiburg.de/&quot;&gt;http://thermal.cs.uni-freiburg.de/&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h1 id=&quot;introduction&quot;&gt;Introduction&lt;/h1&gt;
+
+&lt;p&gt;Robust and accurate semantic segmentation of urban scenes is one of the enabling technologies for autonomous driving in complex and cluttered driving scenarios. Recent years have shown great progress in RGB image segmentation for autonomous driving which were predominantly demonstrated in favorable daytime illumination conditions.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://miro.medium.com/max/700/1*gpugLE9nHDAVHWz7TEF8Fg.png&quot; alt=&quot;&quot; /&gt;&lt;em&gt;Fig. 1: During nighttime, thermal images provide important additional data that is not present in the visible spectrum. Note the contrast between vegetation and sky/clouds and the bright spots on the left and right, indicating pedestrians.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://miro.medium.com/max/700/1*DjUjssG4oWloOgjOvN_UEw.png&quot; alt=&quot;&quot; /&gt;&lt;em&gt;Fig. 2: In daytime scenes, thermal images can also provide important information where the dynamic range of standard RGB cameras does not suffice (vegetation in front of the bright sky). Note the temperature gradient between car or truck and road.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;While the reported results demonstrate high accuracies on benchmark datasets, these models tend to generalize poorly to adverse weather conditions and low illumination levels present at nighttime. This constraint becomes especially apparent in rural areas where artificial lighting is weak or scarce. In autonomous driving, to ensure safety and situation awareness, robust perception in these conditions is a vital prerequisite.&lt;/p&gt;
+
+&lt;p&gt;In order to perform similarly well in challenging illumination conditions, it is beneficial for autonomous vehicles to leverage modalities complementary to RGB images. Encouraged by prior work in thermal image processing, we investigate leveraging thermal images for nighttime semantic segmentation of urban scenes. Thermal images contain accurate thermal radiation measurements with a high spatial density. Furthermore, thermal radiation is much less influenced by sunlight illumination changes and is less sensitive to adversary conditions. Existing RGB-thermal datasets for semantic image segmentation are not as large-scale as their RGB-only counterparts. Thus, models trained on such datasets generalize poorly to challenging real-world scenarios.&lt;/p&gt;
+
+&lt;h1 id=&quot;technical-approach&quot;&gt;Technical Approach&lt;/h1&gt;
+
+&lt;p&gt;In contrast to previous works, we utilize a semantic segmentation network for RGB daytime images as a teacher model, trained in supervised fashion on the Mapillary Vistas Dataset, to provide labels for the RGB daytime images in our dataset. We project the thermal images into the viewpoint of the RGB camera images using extrinsic and intrinsic camera parameters that we determine using our novel targetless camera calibration approach. Afterward, we can reuse labels from this teacher model to train a multimodal semantic segmentation network on our daytime RGB-thermal image pairs. While the thermal modality is mostly invariant to lighting changes, the RGB modality differs significantly between daytime and nighttime and thus exhibits a significant domain gap. In order to encourage day-night invariant segmentation of scenes, we simultaneously train a feature discriminator that aims at classifying features in the semantic segmentation network to belong either to daytime or nighttime images. This helps aligning the internal feature distributions of the multimodal segmentation network, enabling the network to perform similarly well for nighttime images as for daytime images. Furthermore, we propose a novel training schedule for our multimodal network that helps to align the feature representations between day and night.
+As thermal cameras are not yet available in most autonomous platforms, we further propose to distill the knowledge from the domain adapted multimodal model back into a unimodal segmentation network that exclusively uses RGB images.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://miro.medium.com/max/1000/1*TXnKskQ5MN4hPLUbqElJuA.png&quot; alt=&quot;&quot; /&gt;&lt;em&gt;Fig. 3: Our proposed HeatNet architecture uses both RGB and thermal images and is trained to predict segmentation masks in daytime and nighttime domains. We train our model with daytime supervision from a pre-trained RGB teacher model and with optional nighttime supervision from a pre-trained thermal teacher model trained on exclusively thermal images. We simultaneously minimize the cross-entropy prediction loss to the teacher model prediction and minimize a domain confusion loss from a domain discriminator to reduce the domain gap between daytime and nighttime images.&lt;/em&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;dataset&quot;&gt;Dataset&lt;/h1&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://miro.medium.com/max/561/1*2h1aMsaGfqjhBJnoYdDWYg.png&quot; alt=&quot;&quot; /&gt;&lt;em&gt;Fig 4: Our stereo RGB and thermal camera rig mounted on our data collection vehicle.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;To kindle research in the area of thermal image segmentation and to allow for credible quantitative evaluation, we create the large-scale dataset Freiburg Thermal. We provide the dataset and the code publicly available at http://thermal.cs.uni-freiburg.de/. The Freiburg Thermal dataset was collected during 5 daytime and 3 nighttime data collection runs, spanning the seasons summer through winter. Overall, the dataset contains 12051 daytime and 8596 nighttime time-synchronized images using a stereo RGB camera rig (FLIR Blackfly 23S3C) and a stereo thermal camera rig (FLIR ADK) mounted on the roof of our data collection vehicle. In addition to images, we recorded the GPS/IMU data and LiDAR point clouds. The Freiburg Thermal dataset contains highly diverse driving scenarios including highways, densely populated urban areas, residential areas, and rural districts. We also provide a testing set comprising 32 daytime and 32 nighttime annotated images. Each image has pixelwise semantic labels for 13 different object classes. Annotations are provided for the following classes: Road, Sidewalk, Building, Curb, Fence, Pole/Signs, Vegetation, Terrain, Sky, Person/Rider, Car/Truck/Bus/Train, Bicycle/Motorcycle, and Background. We deliberately selected extremely challenging urban and rural scenes with many traffic participants and changing illumination conditions.&lt;/p&gt;
+
+&lt;h2 id=&quot;camera-calibration&quot;&gt;Camera Calibration&lt;/h2&gt;
+
+&lt;p&gt;For our segmentation approach it is important to perfectly align RGB and thermal images as otherwise, the RGB teacher model predictions would not be valid as labels for the thermal modality. Thus, in order to accurately carry out the camera calibration for the thermal camera, we propose a novel targetless calibration procedure. While in previous works, different kinds of checkerboards or circle boards have been leveraged, our method does not require any pattern. Although for RGB cameras, these patterns can be produced and utilized easily, it still remains a challenge to create patterns that are robustly visible both in RGB and thermal images. In general, the used modalities infrared and RGB entail different information. However, we note that the edges of most common objects in urban scenes are easily observable in both modalities. Thus, in our approach, we minimize the pixel-wise distance between such edges. In the case of aligning two monocular cameras, targetless calibration without any prior information results in ambiguities for the estimation of the intrinsic camera parameters. We, therefore, utilize our pre-calibrated RGB stereo rig in order to provide the missing sense of scale. Due to the target-less nature of our approach, our thermal camera calibration method can be easily deployed in an online calibration scenario.&lt;/p&gt;
+
+&lt;h1 id=&quot;results&quot;&gt;Results&lt;/h1&gt;
+
+&lt;p&gt;We report the performance of HeatNet trained on Freiburg Thermal and tested on Freiburg Thermal, MF, and on the BDD (Berkeley Deep Drive) night test split. We observe that our RGB Teacher model, which is trained on the Vistas dataset, has a high mIoU score of 69.4 in the day domain and an expected low score of 35.7, as the network is neither trained nor adapted to the night domain.&lt;/p&gt;
+
+&lt;p&gt;Our thermal teacher model MN achieves a mIoU score of 57.0, which shows that the domain gap is much smaller for this domain as for RGB. Our final RGB-T HeatNet model achieves with 64.9 the overall best score on our test set. Furthermore, the RGB-only HeatNet reaches a comparable score to our RGB-T variant, proving the efficiency of our distillation approach which leverages the thermal images as a bridge modality.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://miro.medium.com/max/1000/1*coWKgtX8reP_BPiQy1F3uQ-0.1x.png&quot; alt=&quot;&quot; /&gt;&lt;em&gt;Fig 5: Our stereo RGB and thermal camera rig mounted on our data collection vehicle.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;We deploy the same distilled RGB network to publish results on the night BDD split. It can be observed that our method boosts mIoU by 50%. In order to compare the performance of our network with the recent RGB-T semantic segmentation approaches MFNet and RTFNet-50, we also fine-tune our model on the 784-image MF training set and report scores on the corresponding test set. We select all classes that are compatible between MF and Freiburg Thermal for evaluation which are the classes Car, Person, and Bike. We train our method only with labels provided by the teacher model MD, while not requiring any nighttime labels or labels from MF in general. Thus, it is expected that MFNet and RTFNet outperform HeatNet as they are trained supervised. However, it can be observed that HeatNet achieves comparable numbers to MFNet.&lt;/p&gt;
+
+&lt;p&gt;We further evaluate the generalization properties of the models trained on MF and tested on our FR-T dataset. We observe that the model performance deteriorates when evaluating MFNet or RTFNet on our FR-T dataset. We conclude that the diversity and complexity of the MF dataset do not suffice to train robust and accurate models for daytime or nighttime semantic segmentation of urban scenes.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://miro.medium.com/max/1000/1*Gj4Mn9qbR8wCqNl0XGRfSQ.png&quot; alt=&quot;&quot; /&gt;&lt;em&gt;Fig 6: Qualitative semantic segmentation results of our model variants. We compare segmentation masks of our RGB-only teacher model, HeatNet RGB-only, and HeatNet RGB-T to ground truth. In the first two rows, we show segmentation masks obtained on the Freiburg Thermal dataset. The bottom row illustrates results obtained on the RGB-only BDD dataset. The multimodal approaches cannot be evaluated on BDD and the corresponding images are left blank.&lt;/em&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h1&gt;
+
+&lt;p&gt;In this work, we presented a novel and robust approach for daytime and nighttime semantic segmentation of urban scenes by leveraging both RGB and thermal images. We showed that our HeatNet approach avoids expensive and cumbersome annotation of nighttime images by learning from a pre-trained RGB-only teacher model and by adapting to the nighttime domain. We further proposed a novel training initialization scheme by first pre-training our model with a daytime RGB-only teacher model and a nighttime thermal-only teacher model and subsequently fine-tuning the model with a domain confusion loss. We furthermore introduced a first-of-its-kind large-scale RGB-T semantic segmentation dataset, including a novel target-less thermal camera calibration method based on image gradient alignment maximization. We presented comprehensive quantitative and qualitative evaluations on multiple datasets and demonstrated the benefit of the complimentary thermal modality for semantic segmentation and for learning more robust RGB-only nighttime models.&lt;/p&gt;
+</description>
+        <pubDate>Mon, 16 Mar 2020 00:00:00 +0100</pubDate>
+        <link>http://localhost:4000/2020/03/heatnet.html</link>
+        <guid isPermaLink="true">http://localhost:4000/2020/03/heatnet.html</guid>
+        
+        <category>blog</category>
+        
+        
+      </item>
     
       <item>
         <title>Self-Supervised Visual Terrain Classification</title>
@@ -25,11 +87,11 @@
 
 &lt;p&gt;Furthermore, unsupervised audio classification eliminates the need to manually label audio samples. We take a step towards lifelong learning for visual terrain classification by leveraging the fact that the distribution of terrain sounds does not depend on the visual appearance of the terrain. This enables us to employ our trained audio terrain classification model in previously unseen visual perceptual conditions to automatically label patches of terrain in images, in a completely self-supervised manner. The visual classification model can then be fine-tuned on the new training samples by leveraging transfer learning to adapt to the new appearance conditions.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/2040/1*RLFgI9YaGIU7-rdCYqW5lg.png&quot; alt=&quot;Fig. 1: Our self-supervised approach enables a robot to classify urban terrains without any manual labeling using an on-board camera and a microphone. Our proposed unsupervised audio classifier automatically labels visual terrain patches by projecting the traversed tracks into camera images. The resulting sparsely labeled images are used to train a semantic segmentation network for visually classifying new camera images in a pixel-wise manner.&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/2040/1*RLFgI9YaGIU7-rdCYqW5lg.png&quot; alt=&quot;&quot; /&gt;&lt;em&gt;Fig. 1: Our self-supervised approach enables a robot to classify urban terrains without any manual labeling using an on-board camera and a microphone. Our proposed unsupervised audio classifier automatically labels visual terrain patches by projecting the traversed tracks into camera images. The resulting sparsely labeled images are used to train a semantic segmentation network for visually classifying new camera images in a pixel-wise manner.&lt;/em&gt;&lt;/p&gt;
 
 &lt;p&gt;In our work, we present a novel self-supervised approach to visual terrain classification by exploiting the supervisory signal from an unsupervised proprioceptive terrain classifier utilizing vehicle-terrain interaction sounds. Fig. 1 illustrates our approach where our robot equipped with a camera and a microphone traverses different terrains and captures both sensor streams along its trajectory. The poses of the robot recorded along the trajectory enables us to associate the visual features of a patch of ground that is in front of the robot initially with its corresponding auditory features when that patch of ground is traversed by the robot. We split the audio stream into small snippets and embed them into an embedding space using metric learning. To this end, we propose a novel triplet sampling method based on the visual features of the respective terrain patches. This now enables the usage of triplet loss formulations for metric learning without requiring ground truth labels. We obtained the aforementioned visual features from an off-the-shelf image classification model pre-trained on the ImageNet dataset. To the best of our knowledge, our work is the first to exploit embeddings from one modality to form triplets for learning an embedding space for samples from an extremely different modality. We interpret the resulting clusters formed by the audio embeddings as labels for training a weakly-supervised visual semantic terrain segmentation model. We then employ this model for pixel-wise classification of terrain that is in front of the robot and use this information to build semantic terrain maps of the robot environment.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/2798/1*wpeYWwL1DKz0foGVS3qnzA.png&quot; alt=&quot;Fig. 2: The five terrain types along with a birds-eye-view image and the corresponding spectrogram of the vehicle-terrain interaction sound from the five different terrain classes&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/2798/1*wpeYWwL1DKz0foGVS3qnzA.png&quot; alt=&quot;&quot; /&gt;&lt;em&gt;Fig. 2: The five terrain types along with a birds-eye-view image and the corresponding spectrogram of the vehicle-terrain interaction sound from the five different terrain classes&lt;/em&gt;&lt;/p&gt;
 
 &lt;h1 id=&quot;technical-approach&quot;&gt;Technical Approach&lt;/h1&gt;
 
@@ -37,7 +99,7 @@
 obtained using our SLAM system. We then project the camera images into a birds-eye-view perspective and project the path traversed by the robot in terms of its footprint into this viewpoint. We transform the audio clips into a spectrogram representation and embed them into an embedding space using our proposed Siamese Encoder with Reconstruction loss on audio triplets that uses features in the visual domain for triplet forming. Subsequently, we cluster the embeddings and use the cluster indices to automatically label the corresponding robot path segments in the birds-eye-view images. The resulting labeled images serve as weakly labeled training data for the
 semantic segmentation network. &lt;strong&gt;Note that the entire approach is executed completely in an unsupervised manner&lt;/strong&gt;. The cluster indices can be used to indicate terrain labels such as Asphalt and Grass or in terms of terrain properties.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/2738/1*DZ_nv_57MBfY8msL67Luxg.png&quot; alt=&quot;Fig. 3: Overview of our proposed self-supervised terrain classification framework. The upper part of the figure illustrates our novel Siamese Encoder with Reconstruction loss (SE-R), while the lower part illustrates how the labels obtained from the SE-R are used to automatically annotate data for training the semantic segmentation network. The camera images are first projected into a birds-eye-view perspective of the scene and the trajectory of the robot is projected into this viewpoint. In our SE-R approach, using both the audio clips from the recorded terrain traversal and the corresponding patches of terrain recorded with a camera, we embed each clip of the audio stream into an embedding space that is highly discriminative in terms of the underlying terrain class. This is performed by forming triplets of audio samples using the visual similarity of the corresponding patches of ground obtained with a pre-trained feature extractor. We then cluster the resulting audio embeddings and use the cluster indices as labels for self-supervised labeling. The resulting labeled images serve as a weakly labeled training dataset for a semantic segmentation network for pixel-wise terrain classification.&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/2738/1*DZ_nv_57MBfY8msL67Luxg.png&quot; alt=&quot;&quot; /&gt;&lt;em&gt;Fig. 3: Overview of our proposed self-supervised terrain classification framework. The upper part of the figure illustrates our novel Siamese Encoder with Reconstruction loss (SE-R), while the lower part illustrates how the labels obtained from the SE-R are used to automatically annotate data for training the semantic segmentation network. The camera images are first projected into a birds-eye-view perspective of the scene and the trajectory of the robot is projected into this viewpoint. In our SE-R approach, using both the audio clips from the recorded terrain traversal and the corresponding patches of terrain recorded with a camera, we embed each clip of the audio stream into an embedding space that is highly discriminative in terms of the underlying terrain class. This is performed by forming triplets of audio samples using the visual similarity of the corresponding patches of ground obtained with a pre-trained feature extractor. We then cluster the resulting audio embeddings and use the cluster indices as labels for self-supervised labeling. The resulting labeled images serve as a weakly labeled training dataset for a semantic segmentation network for pixel-wise terrain classification.&lt;/em&gt;&lt;/p&gt;
 
 &lt;p&gt;We will now briefly discuss the major steps in the processing pipeline.&lt;/p&gt;
 
@@ -49,9 +111,7 @@ semantic segmentation network. &lt;strong&gt;Note that the entire approach is ex
 
 &lt;p&gt;Each terrain patch that the robot traverses is represented by two modalities: &lt;strong&gt;sound **and **vision&lt;/strong&gt;. We obtain the visual representation of a terrain patch from a distance using an on-board camera, while we record the vehicle-terrain interaction sounds by traversing the corresponding terrain patch. For our unsupervised acoustic feature learning approach, we exploit the highly discriminative visual embeddings of terrain patch images obtained using a CNN pre-trained on the ImageNet dataset to form triplets of audio samples. To form such discriminative clusters of embeddings, triplet losses have been proposed. We argue that the relative position of a terrain patch image embeddings in embedding space serves as a good approximation for ground truth labels that have previously been relied on for triplet forming. We form triplets of audio clips using this heuristic. Finally, we train our Siamese Encoder with reconstruction loss in order to embed these audio clips into a highly discriminative audio embedding space.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/2752/1*UsfZ6KFFxmfLrCGFs6-4-Q.png&quot; alt=&quot;Fig. 4: Two-dimensional t-SNE visualizations of the audio samples embedded with our SE-R approach after 0, 10, 30, and 90 epochs of training. The color of
-the points indicate the corresponding ground truth class. We observe that clusters of embeddings are clearly separable as the training progresses and they
-highly correlate with the ground truth terrain class.&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/2752/1*UsfZ6KFFxmfLrCGFs6-4-Q.png&quot; alt=&quot;&quot; /&gt;&lt;em&gt;Fig. 4: Two-dimensional t-SNE visualizations of the audio samples embedded with our SE-R approach after 0, 10, 30, and 90 epochs of training. The color of the points indicate the corresponding ground truth class. We observe that clusters of embeddings are clearly separable as the training progresses and they highly correlate with the ground truth terrain class.&lt;/em&gt;&lt;/p&gt;
 
 &lt;p&gt;The triplet loss enforces that the embeddings of samples with the same label are pulled together in embedding space and embeddings of samples with different labels are pushed away from each other simultaneously. As the ground truth labels of the audio samples are not available to form triplets, we argue that an unsupervised heuristic can serve as a substitute signal for the ground truth labels for triplet creation: the local neighborhood of the terrain image patch embeddings. We obtain rectangular patches of terrain by selecting segments of pixels along the robot path. The closest neighbor in the embedding space has a high likelihood of belonging to the same ground truth class as the anchor sample. Therefore, for sampling triplets, we select
 the sample with the smallest euclidean distance in the visual embedding space as a positive sample. We then select negative samples by randomly selecting samples that are in a different cluster in visual embedding space than the anchor sample. Although it cannot be always guaranteed that the negative sample does not have the same ground truth class, it has a high likelihood of belonging to a different class, which we observe in our experiments. Likewise, we argue that visually similar terrain patches have a high likelihood of belonging to the same class. This means that in practice a fraction of the generated triplets are not correctly formed. However, we empirically find that it is sufficient if the majority all triplets have correct class assignments as they outweigh the incorrectly defined triplets.&lt;/p&gt;
@@ -70,7 +130,7 @@ the sample with the smallest euclidean distance in the visual embedding space as
 
 &lt;p&gt;Fig. 6 illustrates some qualitative terrain classification results for a small clip in the dataset. We observe that a majority of pixels in each frame are assigned the correct labels. Some errors occur for terrains that are partially covered with objects (bikes in this scene) or have non-favorable lighting conditions.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/1200/1*D97v_vFaO4xMiCYewfZTKw.gif&quot; alt=&quot;Fig. 6: Qualitative terrain classification results for a small clip in the dataset.&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/1200/1*D97v_vFaO4xMiCYewfZTKw.gif&quot; alt=&quot;&quot; /&gt;&lt;em&gt;Fig. 6: Qualitative terrain classification results for a small clip in the dataset.&lt;/em&gt;&lt;/p&gt;
 
 &lt;p&gt;For more qualitative and quantitative results, please refer to the original publication.&lt;/p&gt;
 
@@ -79,7 +139,7 @@ the sample with the smallest euclidean distance in the visual embedding space as
 &lt;p&gt;One of the major advantages of our self-supervised approach is that new labels on previously unseen terrains can easily be generated by the robot automatically. While the terrain traversal sounds do not substantially vary with the weather conditions other than rain and winds, the visual appearance of terrain can vary depending on several factors including time of day, season
 or cloudiness. We record data at dusk with low light conditions and artificial lighting resulting in a variation in terrain hues and substantial motion blur. We qualitatively compare the terrain classification results for a model trained exclusively on the Freiburg Terrains dataset and a model trained jointly on the Freiburg Terrains dataset as well as on the new low light dataset. Qualitative results from this experiment are shown in Fig. 7.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/2058/1*tipiric5f43gM8chA19Log.png&quot; alt=&quot;Fig. 7: Qualitative results on a new low light dataset that was captured at dusk that has a considerable amount of motion blur, color noise, and artificial lighting. We show a comparison between the terrain classification model without and with fine-tuning on training data created using our self-supervised approach&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/2058/1*tipiric5f43gM8chA19Log.png&quot; alt=&quot;&quot; /&gt;&lt;em&gt;Fig. 7: Qualitative results on a new low light dataset that was captured at dusk that has a considerable amount of motion blur, color noise, and artificial lighting. We show a comparison between the terrain classification model without and with fine-tuning on training data created using our self-supervised approach.&lt;/em&gt;&lt;/p&gt;
 
 &lt;h4 id=&quot;semantic-terrain-mapping&quot;&gt;Semantic Terrain Mapping&lt;/h4&gt;
 
@@ -87,17 +147,15 @@ or cloudiness. We record data at dusk with low light conditions and artificial l
 global map using the 3-D camera pose and we use no additional image blending or image alignment optimization. For each single birds-eye-view image, we generate pixel-wise terrain classification predictions using our self-supervised semantic segmentation model. We then project these segmentation mask predictions into their corresponding locations in the global semantic terrain map, similar to the procedure that we employ for the birds-eye-view images. When there are predictions of a terrain location from multiple views, we choose the class with the highest prediction count for each pixel in the map. We also experimented with fusing the predictions from multiple views using Bayesian fusion which yields similar results.
 Fig. 8 shows how a semantic terrain map can be built from single camera images and the corresponding semantic terrain predictions of our approach. It can be observed that our self- supervised terrain segmentation model yields predictions that are for the most part globally consistent.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/1200/1*OCPqWK0-YffKVpQ_myanvA.gif&quot; alt=&quot;Fig. 8: Tiled birds-eye-view images and the corresponding semantic terrain maps built from the predictions of our self-supervised semantic terrain segmentation model. We use the SLAM poses of the camera to obtain the 6-D camera poses for each frame.&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/1200/1*OCPqWK0-YffKVpQ_myanvA.gif&quot; alt=&quot;&quot; /&gt;&lt;em&gt;Fig. 8: Tiled birds-eye-view images and the corresponding semantic terrain maps built from the predictions of our self-supervised semantic terrain segmentation model. We use the SLAM poses of the camera to obtain the 6-D camera poses for each frame.&lt;/em&gt;&lt;/p&gt;
 
 &lt;h1 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h1&gt;
 
-&lt;p&gt;In this work, we proposed a self-supervised terrain classification framework that exploits the training signal from an unsupervised proprioceptive terrain classifier to learn an exteroceptive classifier for pixel-wise semantic terrain segmentation. We presented a novel heuristic for triplet sampling in metric
-learning that leverages a complementary modality as opposed to the typical strategy that requires ground truth labels. We employed this proposed heuristic for unsupervised clustering of vehicle-terrain interaction sound embeddings and subsequently used the resulting clusters formed by the audio embeddings for self-supervised labeling of terrain patches in images. We then
-trained a semantic terrain segmentation network from these weak labels for dense pixel-wise classification of terrains that are in front of the robot.&lt;/p&gt;
+&lt;p&gt;In this work, we proposed a self-supervised terrain classification framework that exploits the training signal from an unsupervised proprioceptive terrain classifier to learn an exteroceptive classifier for pixel-wise semantic terrain segmentation. We presented a novel heuristic for triplet sampling in metric learning that leverages a complementary modality as opposed to the typical strategy that requires ground truth labels. We employed this proposed heuristic for unsupervised clustering of vehicle-terrain interaction sound embeddings and subsequently used the resulting clusters formed by the audio embeddings for self-supervised labeling of terrain patches in images. We then trained a semantic terrain segmentation network from these weak labels for dense pixel-wise classification of terrains that are in front of the robot.&lt;/p&gt;
 
 &lt;hr /&gt;
 
-&lt;p&gt;Thanks for reading and happy new year!&lt;/p&gt;
+&lt;p&gt;Thanks for reading!&lt;/p&gt;
 </description>
         <pubDate>Sat, 04 Jan 2020 00:00:00 +0100</pubDate>
         <link>http://localhost:4000/2020/01/terrain.html</link>
@@ -2108,140 +2166,6 @@ a_{div} = a(e_{div}; \sigma^2)
         <pubDate>Thu, 10 May 2018 00:00:00 +0200</pubDate>
         <link>http://localhost:4000/2018/05/flow2.html</link>
         <guid isPermaLink="true">http://localhost:4000/2018/05/flow2.html</guid>
-        
-        <category>blog</category>
-        
-        
-      </item>
-    
-      <item>
-        <title>Neural Networks for Steady-State Fluid Flow Prediction : Part 1</title>
-        <description>&lt;p&gt;This article aims to give a broad overview of how neural networks, Fully Convolutional neural networks in specific, are able to learn fluid flow around an obstacle by learning from examples.&lt;/p&gt;
-
-&lt;p&gt;This series is divided into three parts.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Part 1: A data-driven approach to CFD&lt;/strong&gt; (this post)&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Part 2: &lt;a href=&quot;https://jzuern.github.io/2018/05/flow2.html&quot;&gt;Implementation details&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Part 3: &lt;a href=&quot;https://jzuern.github.io/2018/07/flow3.html&quot;&gt;Results&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
-
-&lt;h1 id=&quot;introduction&quot;&gt;Introduction&lt;/h1&gt;
-
-&lt;p&gt;Solving fluid flow problems using computational fluid dynamics (CFD) can be demanding both in terms of computer hardware and simulation time. Artificial neural networks (ANNs) are universal approximators and are capable of learning nonlinear dependencies between many variables. This article aims to apply artificial neural networks to solve fluid flow problems in order to significantly decreased time-to-solution while preserving much of the accuracy of a full-fledged CFD solution.&lt;/p&gt;
-
-&lt;p&gt;An important observation to be made for laminar flow is the fact that the fuid flow at a certain point within the simulation domain is mainly dependent on the flow in its immediate neighborhood, though not heavily dependent on more distant areas in the simulation domain. If the fluid flow in an area changes due to a modified geometry of an obstacle for the fluid, one may expect to see a difference in the immediate neighborhood of this area, but no substantial change to the overall ow behavior in more distant parts of the simulation domain. State-of-the-art numerical solvers do not take advantage of the immediate relationship between small changes in obstacle shape and resulting small changes in flow behavior. They have no “memory” of previous simulations. This work argues that such a memory of previous simulations in combination with learning the connection between simulated geometry and developed fluid flow can be learned by an Artificial Neural Network. Given enough training data for the ANN and a well-suited network architecture, the neural network can be expected to be able to predict flow fields around previously not seen geometries with a hopefully high accuracy. The immense speed in fluid flow estimation once the network was trained gives this data-driven approach to CFD advantages in terms of computation speed under certain conditions.&lt;/p&gt;
-
-&lt;h1 id=&quot;creating-training-data&quot;&gt;Creating training data&lt;/h1&gt;
-
-&lt;p&gt;The neural network should be able to predict fluid flow behavior based merely on the geometry of the object. For the sake of simplicity, this work solely focuses on making the network predict the fluid velocity vectors. Other important field quantities such as density or pressure will not be part of the network training data but may in principle be taken into account as well.&lt;/p&gt;
-
-&lt;p&gt;In order to create a training set that is diverse enough in terms of obstacle shapes, obstacle orientation and obstacle size, a way to create geometries of different kinds and shapes had to be found. The shapes had not only to be diverse enough to let the neural network learn the dependencies between different kinds of shapes and their respective surrounding flowfields, but they also had be mesh-able without the need for custom meshing parameters depending on the concrete geometry topology. Due to these constraint, this work focused on creating random two-dimensional polygons. In order to avoid visualization artifacts and to create smooth surfaces, the sharp corners of the obstacle surfaces are smoothed with a laplacian smoothing operation.&lt;/p&gt;
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/flow1/1.png&quot; alt=&quot;&quot; /&gt;&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;&lt;em&gt;Some smoothed polygons used as training data&lt;/em&gt;&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;p&gt;A critical question to address is how the geometry of the simulation setup can be represented for the neural network. In order to simulate the fluid flow around a specific geometry, it has to be converted into a mesh. This mesh is composed of primitive elements such as tetrahedra or cubes. Slightly modifying the simulated geometry or changing meshing parameters such as element size can substantially change the single element parameters and the total number of elements in the mesh. Fully Convolutional neural networks are designed to only handle input objects of the same size. A straightforward way to map an arbitrary mesh to a regular grid of values is to voxelize it. This is achieved by overlaying the mesh with a regular grid and assigning a value to each of the grid cells depending on the content of the mesh at this point. This process is called voxelization. The grid has the same dimensions for every input geometry and thus allows for one single network architecture for all input geometries while preserving details of the geometry topology.&lt;/p&gt;
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/flow1/2.png&quot; alt=&quot;&quot; /&gt;&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;&lt;em&gt;Fluid velocity in vertical y-direction&lt;/em&gt;&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/flow1/22.png&quot; alt=&quot;&quot; /&gt;&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;&lt;em&gt;Fluid velocity in horizontal x-direction&lt;/em&gt;&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;p&gt;The simulation data is voxelized in the same fashion. Thus, the simulation data consists of a tensor of shape [height, width, 2] for there are two velocity components to a two-dimensional velocity vector.&lt;/p&gt;
-
-&lt;p&gt;The whole work-flow for training-data creation can be summarized as follows:&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;
-    &lt;p&gt;&lt;strong&gt;Geometry generation&lt;/strong&gt;: Different obstacle geometries with varying shapes are created. They are exported as STL files for later import into a meshing program and also as a numpy array containing the voxel grid of the geometry.&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;&lt;strong&gt;OpenFOAM case setup&lt;/strong&gt;: This second step creates a geometry-specific OpenFOAM case from a template case and inserts the geometry that was created in step 1.&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;&lt;strong&gt;Meshing&lt;/strong&gt;: Meshing of the created obstacle geometry.&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;&lt;strong&gt;Simulation&lt;/strong&gt;: Simulating the concrete OpenFOAM test case. The simulation may reach an end once a convergence criteria is fulfilled. This might be a maximum number of steps or a negligible residuum.&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;&lt;strong&gt;Post-processing&lt;/strong&gt;: In this step, the OpenFOAM case results are converted into the VTK file format and a pixel/voxel grid of the results is created with paraView and saved to disk.&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/flow1/3.png&quot; alt=&quot;&quot; /&gt;&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;&lt;em&gt;Generic Open-FOAM simulation setup. The fluid streams into the simulation domain through the inlet, goes around the obstacle and leaves the simulation box through the outlet.&lt;/em&gt;&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;p&gt;Generic Open-FOAM simulation setup. The fluid streams into the simulation domain through the inlet, goes around the obstacle and leaves the simulation box through the outlet.&lt;/p&gt;
-
-&lt;h1 id=&quot;network-architecture&quot;&gt;Network architecture&lt;/h1&gt;
-
-&lt;p&gt;Fully Convolutional neural networks (FCNs) are widely used for image segmentation tasks where each pixel of the input image is assigned to a class. Each class corresponds to a type of detected object, i.e. car, pedestrian or dog. This property is achieved by first scaling the input image down and applying convolutional and pooling operations just like a Convlutional Neural Network (CNN). However, in contrast to CNNs, afterwards in a second step, the image is scaled up again using so-called deconvolutional operations (also known as transposed convolution) while preserving the assigned labels to each pixel. Deconvolution layers are identical to convolution layers, if the input and output nodes are switched. FCNs are therefore able to take an input of arbitrary shape and assign a numerical value to each of the entries of the input tensor based on the training samples it was given during training.&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;Thus, a FCN could be able to take a voxel grid of an obstacle, try to predict the fluid flow around the obstacle and compare it with the ground-truth data coming from the OpenFOAM simulation.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;The network architecture which was used for this thesis was adapted from (this implementation)[https://github.com/loliverhennigh/Steady-State-Flow-With-Neural-Nets].&lt;/p&gt;
-
-&lt;p&gt;The network architecture is kept all convolutional and takes advantage of both residual connections and a U-Network architecture. This proved to drastically improve accuracy while maintaining fast computation speeds. In the context of fluid flow prediction, the task of the network is to assign a floating point number to each pixel of the input tensor, representing the fluid flow velocity at this position.&lt;/p&gt;
-
-&lt;p&gt;Since the fluid velocity vector has two components in two dimensions, the FCN outputs two tensors, one for the flow velocity in x-direction and the other one corresponds to the flow velocity in y-direction. Concretely, the output of the neural net is a tensor with dimensions [batchsize, width, height; 2]. The network makes use of several components that have been inspired by PixelCNN++.&lt;/p&gt;
-
-&lt;h1 id=&quot;limitations&quot;&gt;Limitations&lt;/h1&gt;
-
-&lt;p&gt;Laminar fluid flow follows a predictable pattern given a geometry through or around which the fluid flows and a suitable neural network might be able to pick up the complex nonlinear dependencies between simulated geometry and final fluid flow. The structure of fluid flow in reality does not only depend on the shape of obstacles but also on fluid properties such as viscosity, density, and temperature. Other parameters include the type of boundary condition, chemical reactions, and many more. Partially turbulent flows or even fully turbulent flows with higher Reynolds numbers exhibit a much more complex behavior that cannot expected to be modeled by a data-driven approach to CFD.&lt;/p&gt;
-
-&lt;p&gt;A physically accurate model of fluid flow accounts for the field quantities flow velocities &lt;script type=&quot;math/tex&quot;&gt;v(x)&lt;/script&gt;, density &lt;script type=&quot;math/tex&quot;&gt;\rho(x)&lt;/script&gt;, pressure &lt;script type=&quot;math/tex&quot;&gt;p(x)&lt;/script&gt; and inner energy &lt;script type=&quot;math/tex&quot;&gt;e(x)&lt;/script&gt;. In a laminar setup with low flow speeds and no chemical reaction occurring, however,density, pressure, and energy of the fluid are distributed approximately uniformly within the simulation domain and can thus be neglected. Thus, we focused only on fluid flow velocity components in our data-driven approach.&lt;/p&gt;
-
-&lt;p&gt;In this work, specific constant fluid parameters and boundary conditions were chosen for the generation of training samples. As a consequence, the learned dependencies between simulated geometry and fluid flow are only valid for a small subset of simulation setups where the simulation parameters are equal or close to the ones used for the creation of the training data set. As these simulation parameters are not encoded into any of the inputs of the neural network in our approach, we do not expect the network to be able to generalize to simulation parameters it was not trained on previously.&lt;/p&gt;
-
-&lt;h1 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h1&gt;
-
-&lt;p&gt;We saw that given suitable training data, a Fully Convolutional Neural Network is able to learn laminar fluid flow behavior.&lt;/p&gt;
-
-&lt;p&gt;Special thanks to &lt;a href=&quot;https://github.com/loliverhennigh&quot;&gt;Oliver Hennigh&lt;/a&gt;, who made an awesome implementation of a Fully Convolutional Neural Network for fluid flow prediction, which was a huge inspiration for me.&lt;/p&gt;
-</description>
-        <pubDate>Fri, 06 Apr 2018 00:00:00 +0200</pubDate>
-        <link>http://localhost:4000/2018/04/flow1.html</link>
-        <guid isPermaLink="true">http://localhost:4000/2018/04/flow1.html</guid>
         
         <category>blog</category>
         
