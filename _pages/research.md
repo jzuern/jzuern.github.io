@@ -8,7 +8,7 @@ permalink: /research/
 ## Research Statement
 
 
-In my daily reseach I aim at bringing Robotics and Artificial Intelligence, especially Deep Learning, closer together. My goal is to enable autonomous robots to better understand their surroundings with the sensors they have and to allow them to more accurately and robustly navigate through those surroundings in precence of adversarial influences such as sensor noise, uncertainties, and occlusion.
+In my daily reseach I aim at bringing Robotics and Artificial Intelligence, especially Deep Learning, closer together. My goal is to enable autonomous robots to better understand their surroundings with the sensors they have and to allow them to more accurately and robustly navigate through those surroundings in precence of adversarial influences such as sensor noise, uncertainties, and occlusion. Self-supervised learning with multiple sensor modalities plays a particularly important role in this endeavour as it allows us to avoid expensive and time-consuming labeling of data which is necessary for standard supervised learning.
 
 
 
