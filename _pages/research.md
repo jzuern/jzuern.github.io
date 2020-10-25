@@ -34,6 +34,14 @@ In my daily reseach I aim at bringing Robotics and Artificial Intelligence, espe
 | ![](assets/fluid.png) | **[2018] J Zürn**: <br/> *Neural Networks for Steady-State Fluid Flow Prediction* (M.Sc. Thesis) <br/>[**PDF version**](assets/thesis.pdf) |
 |![](assets/heart.png)  | **[2016] M Rottmann, J Zürn, U Arslan, K Klingel, O Dössel**: Effects of fibrosis on the extracellular potential based on 3D reconstructions from histological sections of heart tissue <br/> [Publisher Link](https://doi.org/10.1515/cdbme-2016-0147) |
 
+
+## Reviewer
+
+- IEEE Robotics and Automation Letters (RAL)
+- International Conference on Intelligent Robots and Systems (IROS)
+- International Conference on Multisensor Fusion and Integration for Intelligent Systems (MFI)
+
+
 ## Teaching
 
 ### Theses supervised
