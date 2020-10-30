@@ -14,9 +14,9 @@ In my daily reseach I aim at bringing Robotics and Artificial Intelligence, espe
 ## Projects
 
 
-<a href="https://europa2.informatik.uni-freiburg.de/">EUROPA2</a>
+<a href="https://europa2.informatik.uni-freiburg.de/">EUROPA2: European Robotic Pedestrian Assistant 2.0</a>
 
-<a href="https://opendr.eu/">OpenDR</a>
+<a href="https://opendr.eu/">OpenDR: Open Deep Learning Toolkit for Robotics</a>
 
 
 
@@ -60,10 +60,8 @@ I have supervised a number of theses of very bright students:
 
 I have participated as instructor or lecturer in the following courses:
 
-2019 Summer Term: [Deep Learning Lab](http://ais.informatik.uni-freiburg.de/teaching/ss19/deep_learning_lab/)
-
-
-2020/21 Winter Term: 
+- 2019 Summer Term: [Deep Learning Lab](http://ais.informatik.uni-freiburg.de/teaching/ss19/deep_learning_lab/)
+- 2020/21 Winter Term: [FreiCAR: Practical Autonomous Driving](http://freicar.informatik.uni-freiburg.de/)
 
 
 
