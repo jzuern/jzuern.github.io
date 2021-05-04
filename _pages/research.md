@@ -28,6 +28,7 @@ In my daily reseach I aim at bringing Robotics and Artificial Intelligence, espe
 
 
 |-----------------------------|--------------------|
+| ![](assets/lanes.png) | **[2021] J Zürn, J Vertens, W Burgard**: <br/> *Lane Graph Estimation for Scene Understanding in Urban Driving* <br/> [ArXiv preprint](https://arxiv.org/abs/2105.00195) | 
 | ![](assets/heatnet.png) | **[2020] J Vertens, J Zürn, W Burgard**: <br/> *HeatNet: Bridging the Day-Night Domain Gap in Semantic Segmentation with Thermal Images* <br/> [ArXiv preprint](https://arxiv.org/abs/2003.04645) &#124; [Website](http://thermal.cs.uni-freiburg.de)| 
 | ![](assets/terrain.png) | **[2019] J Zürn, W Burgard, A Valada**: <br/> *Self-Supervised Visual Terrain Classification from Unsupervised Acoustic Feature Learning* <br/> [ArXiv preprint](https://arxiv.org/abs/1912.03227) &#124; [Video](https://www.youtube.com/watch?v=4O9kK0hOSqg) &#124; [Website](http://deepterrain.cs.uni-freiburg.de)|
 | ![](assets/valve.png)  | **[2019] C Megnin, B Moradi, J Zürn, H Ossmer, M Gueltig, M Kohl**: <br/> *Shape memory alloy based controllable multi-port microvalve* <br/> [Publisher link](https://link.springer.com/article/10.1007/s00542-019-04614-w)  |
