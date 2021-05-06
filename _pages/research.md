@@ -63,6 +63,7 @@ I have participated as instructor or lecturer in the following courses:
 
 - 2019 Summer Term: [Deep Learning Lab](http://ais.informatik.uni-freiburg.de/teaching/ss19/deep_learning_lab/)
 - 2020/21 Winter Term: [FreiCAR: Practical Autonomous Driving](http://freicar.informatik.uni-freiburg.de/)
+- 2021 Summer Term: [FreiCAR: Practical Autonomous Driving](http://freicar.informatik.uni-freiburg.de/)
 
 
 
