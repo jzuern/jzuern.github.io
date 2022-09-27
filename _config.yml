@@ -207,6 +207,7 @@ scholar:
 
   last_name: Zürn
   first_name: [Jannik, J.]
+  url: jzuern.github.io
 
   style: apa
   locale: en
@@ -218,7 +219,8 @@ scholar:
   # preprocessing may conflict with MathJAX if the latter is enabled.
   # See https://github.com/alshedivat/al-folio/issues/357.
   bibtex_filters: [latex, smallcaps, superscript]
-
+  filtered_bibtex_keywords: [abbr, abstract, arxiv, bibtex_show, html, pdf, selected, supp, blog, code, poster, slides, website, preview] # Filter out certain bibtex entry keywords used internally from the bib output
+  
   replace_strings: true
   join_strings: true
 
@@ -312,5 +314,3 @@ popper:
 medium_zoom:
   version: "1.0.6"
   integrity: "sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM="
-
-theme: jekyll-theme-cayman

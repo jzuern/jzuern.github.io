@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <!-- Head -->
+  <head>    <!-- Metadata, OpenGraph and Schema.org -->
+    
+
+    <!-- Standard metadata -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Jannik  Zürn | HeatNet: Bridging the Day-Night Domain Gap in Semantic Segmentation with Thermal Images</title>
+    <meta name="author" content="Jannik  Zürn" />
+    <meta name="description" content="HeatNet: Bridging the Day-Night Domain Gap with Thermal Images" />
+    <meta name="keywords" content="jannik zürn, computer vision, robotics, freiburg, ai, ml" />
+
+
+    <!-- Bootstrap & MDB -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha256-DF7Zhf293AJxJNTmh5zhoYYIMs2oXitRfBjY+9L//AY=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mdbootstrap@4.20.0/css/mdb.min.css" integrity="sha256-jpjYvU3G3N6nrrBwXJoVEYI/0zw8htfFnhT9ljN3JJw=" crossorigin="anonymous" />
+
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/academicons@1.9.1/css/academicons.min.css" integrity="sha256-i1+4qU2G2860dGGIOJscdC30s9beBXjFfzjWLjBRsBg=" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:100,300,400,500,700|Material+Icons">
+
+    <!-- Code Syntax Highlighting -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jwarby/jekyll-pygments-themes@master/github.css" media="none" id="highlight_theme_light" />
+
+    <!-- Styles -->
+    
+    <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>">
+    
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="canonical" href="https://jzuern.github.io/blog/2020/heatnet/">
+    
+    <!-- Dark Mode -->
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jwarby/jekyll-pygments-themes@master/native.css" media="none" id="highlight_theme_dark" />
+
+    <script src="/assets/js/theme.js"></script>
+    <script src="/assets/js/dark_mode.js"></script>
+    
+
+  </head>
+
+  <!-- Body -->
+  <body class="fixed-top-nav ">
+
+    <!-- Header -->
+    <header>
+
+      <!-- Nav Bar -->
+      <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top">
+        <div class="container">
+          <a class="navbar-brand title font-weight-lighter" href="https://jzuern.github.io/"><span class="font-weight-bold">Jannik</span>   Zürn</a>
+          <!-- Navbar Toggle -->
+          <button class="navbar-toggler collapsed ml-auto" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar top-bar"></span>
+            <span class="icon-bar middle-bar"></span>
+            <span class="icon-bar bottom-bar"></span>
+          </button>
+
+          <div class="collapse navbar-collapse text-right" id="navbarNav">
+            <ul class="navbar-nav ml-auto flex-nowrap">
+
+              <!-- About -->
+              <li class="nav-item ">
+                <a class="nav-link" href="/">about</a>
+              </li>
+              
+              <!-- Blog -->
+              <li class="nav-item active">
+                <a class="nav-link" href="/blog/">blog</a>
+              </li>
+
+              <!-- Other pages -->
+              <li class="nav-item ">
+                <a class="nav-link" href="/projects/">Projects</a>
+              </li>
+              <li class="nav-item ">
+                <a class="nav-link" href="/publications/">Publications</a>
+              </li>
+              <li class="nav-item ">
+                <a class="nav-link" href="/teaching/">Teaching</a>
+              </li>
+
+              <!-- Toogle theme mode -->
+              <div class="toggle-container">
+                <a id="light-toggle">
+                  <i class="fas fa-moon"></i>
+                  <i class="fas fa-sun"></i>
+                </a>
+              </div>
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Content -->
+    <div class="container mt-5">
+      <!-- _layouts/post.html -->
+
+<div class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">HeatNet: Bridging the Day-Night Domain Gap in Semantic Segmentation with Thermal Images</h1>
+    <p class="post-meta">March 16, 2020</p>
+    <p class="post-tags">
+      <a href="/blog/2020"> <i class="fas fa-calendar fa-sm"></i> 2020 </a>
+        ·  
+        <a href="/blog/tag/blog">
+          <i class="fas fa-hashtag fa-sm"></i> blog</a>  
+          
+
+    </p>
+  </header>
+
+  <article class="post-content">
+    <p><img src="https://miro.medium.com/max/2160/1*6lxnj88gFP_zSiUJ3B3_rw.jpeg" alt=""><em>Photo by Shubham Sharan on Unsplash</em></p>
+
+<p>Today, we will discuss our most recent paper <strong><em>HeatNet: Bridging the Day-Night Domain Gap in Semantic Segmentation with Thermal Images</em></strong> (by Johan Vertens, Jannik Zürn, and Wolfram Burgard). This post serves as a quick and dirty introduction to the topic and to the work itself. For more details, please refer to the original publication, which is available here and the project website will be available soon at <a href="http://thermal.cs.uni-freiburg.de/" target="_blank" rel="noopener noreferrer">http://thermal.cs.uni-freiburg.de/</a>.</p>
+
+<h1 id="introduction">Introduction</h1>
+
+<p>Robust and accurate semantic segmentation of urban scenes is one of the enabling technologies for autonomous driving in complex and cluttered driving scenarios. Recent years have shown great progress in RGB image segmentation for autonomous driving which were predominantly demonstrated in favorable daytime illumination conditions.</p>
+
+<p><img src="http://miro.medium.com/max/700/1*gpugLE9nHDAVHWz7TEF8Fg.png" alt=""><em>Fig. 1: During nighttime, thermal images provide important additional data that is not present in the visible spectrum. Note the contrast between vegetation and sky/clouds and the bright spots on the left and right, indicating pedestrians.</em></p>
+
+<p><img src="http://miro.medium.com/max/700/1*DjUjssG4oWloOgjOvN_UEw.png" alt=""><em>Fig. 2: In daytime scenes, thermal images can also provide important information where the dynamic range of standard RGB cameras does not suffice (vegetation in front of the bright sky). Note the temperature gradient between car or truck and road.</em></p>
+
+<p>While the reported results demonstrate high accuracies on benchmark datasets, these models tend to generalize poorly to adverse weather conditions and low illumination levels present at nighttime. This constraint becomes especially apparent in rural areas where artificial lighting is weak or scarce. In autonomous driving, to ensure safety and situation awareness, robust perception in these conditions is a vital prerequisite.</p>
+
+<p>In order to perform similarly well in challenging illumination conditions, it is beneficial for autonomous vehicles to leverage modalities complementary to RGB images. Encouraged by prior work in thermal image processing, we investigate leveraging thermal images for nighttime semantic segmentation of urban scenes. Thermal images contain accurate thermal radiation measurements with a high spatial density. Furthermore, thermal radiation is much less influenced by sunlight illumination changes and is less sensitive to adversary conditions. Existing RGB-thermal datasets for semantic image segmentation are not as large-scale as their RGB-only counterparts. Thus, models trained on such datasets generalize poorly to challenging real-world scenarios.</p>
+
+<h1 id="technical-approach">Technical Approach</h1>
+
+<p>In contrast to previous works, we utilize a semantic segmentation network for RGB daytime images as a teacher model, trained in supervised fashion on the Mapillary Vistas Dataset, to provide labels for the RGB daytime images in our dataset. We project the thermal images into the viewpoint of the RGB camera images using extrinsic and intrinsic camera parameters that we determine using our novel targetless camera calibration approach. Afterward, we can reuse labels from this teacher model to train a multimodal semantic segmentation network on our daytime RGB-thermal image pairs. While the thermal modality is mostly invariant to lighting changes, the RGB modality differs significantly between daytime and nighttime and thus exhibits a significant domain gap. In order to encourage day-night invariant segmentation of scenes, we simultaneously train a feature discriminator that aims at classifying features in the semantic segmentation network to belong either to daytime or nighttime images. This helps aligning the internal feature distributions of the multimodal segmentation network, enabling the network to perform similarly well for nighttime images as for daytime images. Furthermore, we propose a novel training schedule for our multimodal network that helps to align the feature representations between day and night.
+As thermal cameras are not yet available in most autonomous platforms, we further propose to distill the knowledge from the domain adapted multimodal model back into a unimodal segmentation network that exclusively uses RGB images.</p>
+
+<p><img src="https://miro.medium.com/max/1000/1*TXnKskQ5MN4hPLUbqElJuA.png" alt=""><em>Fig. 3: Our proposed HeatNet architecture uses both RGB and thermal images and is trained to predict segmentation masks in daytime and nighttime domains. We train our model with daytime supervision from a pre-trained RGB teacher model and with optional nighttime supervision from a pre-trained thermal teacher model trained on exclusively thermal images. We simultaneously minimize the cross-entropy prediction loss to the teacher model prediction and minimize a domain confusion loss from a domain discriminator to reduce the domain gap between daytime and nighttime images.</em></p>
+
+<h1 id="dataset">Dataset</h1>
+
+<p><img src="https://miro.medium.com/max/561/1*2h1aMsaGfqjhBJnoYdDWYg.png" alt=""><em>Fig 4: Our stereo RGB and thermal camera rig mounted on our data collection vehicle.</em></p>
+
+<p>To kindle research in the area of thermal image segmentation and to allow for credible quantitative evaluation, we create the large-scale dataset Freiburg Thermal. We provide the dataset and the code publicly available at http://thermal.cs.uni-freiburg.de/. The Freiburg Thermal dataset was collected during 5 daytime and 3 nighttime data collection runs, spanning the seasons summer through winter. Overall, the dataset contains 12051 daytime and 8596 nighttime time-synchronized images using a stereo RGB camera rig (FLIR Blackfly 23S3C) and a stereo thermal camera rig (FLIR ADK) mounted on the roof of our data collection vehicle. In addition to images, we recorded the GPS/IMU data and LiDAR point clouds. The Freiburg Thermal dataset contains highly diverse driving scenarios including highways, densely populated urban areas, residential areas, and rural districts. We also provide a testing set comprising 32 daytime and 32 nighttime annotated images. Each image has pixelwise semantic labels for 13 different object classes. Annotations are provided for the following classes: Road, Sidewalk, Building, Curb, Fence, Pole/Signs, Vegetation, Terrain, Sky, Person/Rider, Car/Truck/Bus/Train, Bicycle/Motorcycle, and Background. We deliberately selected extremely challenging urban and rural scenes with many traffic participants and changing illumination conditions.</p>
+
+<h2 id="camera-calibration">Camera Calibration</h2>
+
+<p>For our segmentation approach it is important to perfectly align RGB and thermal images as otherwise, the RGB teacher model predictions would not be valid as labels for the thermal modality. Thus, in order to accurately carry out the camera calibration for the thermal camera, we propose a novel targetless calibration procedure. While in previous works, different kinds of checkerboards or circle boards have been leveraged, our method does not require any pattern. Although for RGB cameras, these patterns can be produced and utilized easily, it still remains a challenge to create patterns that are robustly visible both in RGB and thermal images. In general, the used modalities infrared and RGB entail different information. However, we note that the edges of most common objects in urban scenes are easily observable in both modalities. Thus, in our approach, we minimize the pixel-wise distance between such edges. In the case of aligning two monocular cameras, targetless calibration without any prior information results in ambiguities for the estimation of the intrinsic camera parameters. We, therefore, utilize our pre-calibrated RGB stereo rig in order to provide the missing sense of scale. Due to the target-less nature of our approach, our thermal camera calibration method can be easily deployed in an online calibration scenario.</p>
+
+<h1 id="results">Results</h1>
+
+<p>We report the performance of HeatNet trained on Freiburg Thermal and tested on Freiburg Thermal, MF, and on the BDD (Berkeley Deep Drive) night test split. We observe that our RGB Teacher model, which is trained on the Vistas dataset, has a high mIoU score of 69.4 in the day domain and an expected low score of 35.7, as the network is neither trained nor adapted to the night domain.</p>
+
+<p>Our thermal teacher model MN achieves a mIoU score of 57.0, which shows that the domain gap is much smaller for this domain as for RGB. Our final RGB-T HeatNet model achieves with 64.9 the overall best score on our test set. Furthermore, the RGB-only HeatNet reaches a comparable score to our RGB-T variant, proving the efficiency of our distillation approach which leverages the thermal images as a bridge modality.</p>
+
+<p><img src="https://miro.medium.com/max/1000/1*coWKgtX8reP_BPiQy1F3uQ-0.1x.png" alt=""><em>Fig 5: Our stereo RGB and thermal camera rig mounted on our data collection vehicle.</em></p>
+
+<p>We deploy the same distilled RGB network to publish results on the night BDD split. It can be observed that our method boosts mIoU by 50%. In order to compare the performance of our network with the recent RGB-T semantic segmentation approaches MFNet and RTFNet-50, we also fine-tune our model on the 784-image MF training set and report scores on the corresponding test set. We select all classes that are compatible between MF and Freiburg Thermal for evaluation which are the classes Car, Person, and Bike. We train our method only with labels provided by the teacher model MD, while not requiring any nighttime labels or labels from MF in general. Thus, it is expected that MFNet and RTFNet outperform HeatNet as they are trained supervised. However, it can be observed that HeatNet achieves comparable numbers to MFNet.</p>
+
+<p>We further evaluate the generalization properties of the models trained on MF and tested on our FR-T dataset. We observe that the model performance deteriorates when evaluating MFNet or RTFNet on our FR-T dataset. We conclude that the diversity and complexity of the MF dataset do not suffice to train robust and accurate models for daytime or nighttime semantic segmentation of urban scenes.</p>
+
+<p><img src="https://miro.medium.com/max/1000/1*Gj4Mn9qbR8wCqNl0XGRfSQ.png" alt=""><em>Fig 6: Qualitative semantic segmentation results of our model variants. We compare segmentation masks of our RGB-only teacher model, HeatNet RGB-only, and HeatNet RGB-T to ground truth. In the first two rows, we show segmentation masks obtained on the Freiburg Thermal dataset. The bottom row illustrates results obtained on the RGB-only BDD dataset. The multimodal approaches cannot be evaluated on BDD and the corresponding images are left blank.</em></p>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>In this work, we presented a novel and robust approach for daytime and nighttime semantic segmentation of urban scenes by leveraging both RGB and thermal images. We showed that our HeatNet approach avoids expensive and cumbersome annotation of nighttime images by learning from a pre-trained RGB-only teacher model and by adapting to the nighttime domain. We further proposed a novel training initialization scheme by first pre-training our model with a daytime RGB-only teacher model and a nighttime thermal-only teacher model and subsequently fine-tuning the model with a domain confusion loss. We furthermore introduced a first-of-its-kind large-scale RGB-T semantic segmentation dataset, including a novel target-less thermal camera calibration method based on image gradient alignment maximization. We presented comprehensive quantitative and qualitative evaluations on multiple datasets and demonstrated the benefit of the complimentary thermal modality for semantic segmentation and for learning more robust RGB-only nighttime models.</p>
+
+  </article><div id="disqus_thread"></div>
+    <script type="text/javascript">
+      var disqus_shortname  = 'jzuern-github-io';
+      var disqus_identifier = '/blog/2020/heatnet';
+      var disqus_title      = "HeatNet: Bridging the Day-Night Domain Gap in Semantic Segmentation with Thermal Images";
+      (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript" target="_blank" rel="noopener noreferrer">comments powered by Disqus.</a>
+</noscript>
+
+</div>
+
+    </div>
+
+    <!-- Footer -->    
+    <footer class="fixed-bottom">
+      <div class="container mt-0">
+        © Copyright 2022 Jannik  Zürn. Powered by <a href="https://jekyllrb.com/" target="_blank" rel="noopener noreferrer">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio" target="_blank" rel="noopener noreferrer">al-folio</a> theme. Hosted by <a href="https://pages.github.com/" target="_blank" rel="noopener noreferrer">GitHub Pages</a>.
+
+      </div>
+    </footer>
+
+    <!-- JavaScripts -->
+    <!-- jQuery -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+
+    <!-- Bootsrap & MDB scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.2/dist/umd/popper.min.js" integrity="sha256-l/1pMF/+J4TThfgARS6KwWrk/egwuVvhRzfLAMQ6Ds4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.min.js" integrity="sha256-SyTu6CwrfOhaznYZPoolVw2rxoY7lKYKQvqbtqN93HI=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mdbootstrap@4.20.0/js/mdb.min.js" integrity="sha256-NdbiivsvWt7VYCt6hYNT3h/th9vSTL4EDWeGs5SN3DA=" crossorigin="anonymous"></script>
+
+    <!-- Masonry & imagesLoaded -->
+  <script defer src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha256-Nn1q/fx0H7SNLZMQ5Hw5JLaTRZp0yILA/FRexe19VdI=" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/imagesloaded@4/imagesloaded.pkgd.min.js"></script>
+  <script defer src="/assets/js/masonry.js" type="text/javascript"></script>
+    
+  <!-- Medium Zoom JS -->
+  <script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/assets/js/zoom.js"></script><!-- Load Common JS -->
+  <script src="/assets/js/common.js"></script>
+
+    <!-- MathJax -->
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        tags: 'ams'
+      }
+    };
+  </script>
+  <script defer type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js"></script>
+  <script defer src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+
+    
+  </body>
+</html>
+

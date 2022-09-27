@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <!-- Head -->
+  <head>    <!-- Metadata, OpenGraph and Schema.org -->
+    
+
+    <!-- Standard metadata -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Jannik  Zürn | Robot localization with Kalman-Filters and landmarks</title>
+    <meta name="author" content="Jannik  Zürn" />
+    <meta name="description" content="Can we make a 2D robot happy again?" />
+    <meta name="keywords" content="jannik zürn, computer vision, robotics, freiburg, ai, ml" />
+
+
+    <!-- Bootstrap & MDB -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha256-DF7Zhf293AJxJNTmh5zhoYYIMs2oXitRfBjY+9L//AY=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mdbootstrap@4.20.0/css/mdb.min.css" integrity="sha256-jpjYvU3G3N6nrrBwXJoVEYI/0zw8htfFnhT9ljN3JJw=" crossorigin="anonymous" />
+
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/academicons@1.9.1/css/academicons.min.css" integrity="sha256-i1+4qU2G2860dGGIOJscdC30s9beBXjFfzjWLjBRsBg=" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:100,300,400,500,700|Material+Icons">
+
+    <!-- Code Syntax Highlighting -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jwarby/jekyll-pygments-themes@master/github.css" media="none" id="highlight_theme_light" />
+
+    <!-- Styles -->
+    
+    <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>">
+    
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="canonical" href="https://jzuern.github.io/blog/2018/kalman/">
+    
+    <!-- Dark Mode -->
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jwarby/jekyll-pygments-themes@master/native.css" media="none" id="highlight_theme_dark" />
+
+    <script src="/assets/js/theme.js"></script>
+    <script src="/assets/js/dark_mode.js"></script>
+    
+
+  </head>
+
+  <!-- Body -->
+  <body class="fixed-top-nav ">
+
+    <!-- Header -->
+    <header>
+
+      <!-- Nav Bar -->
+      <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top">
+        <div class="container">
+          <a class="navbar-brand title font-weight-lighter" href="https://jzuern.github.io/"><span class="font-weight-bold">Jannik</span>   Zürn</a>
+          <!-- Navbar Toggle -->
+          <button class="navbar-toggler collapsed ml-auto" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar top-bar"></span>
+            <span class="icon-bar middle-bar"></span>
+            <span class="icon-bar bottom-bar"></span>
+          </button>
+
+          <div class="collapse navbar-collapse text-right" id="navbarNav">
+            <ul class="navbar-nav ml-auto flex-nowrap">
+
+              <!-- About -->
+              <li class="nav-item ">
+                <a class="nav-link" href="/">about</a>
+              </li>
+              
+              <!-- Blog -->
+              <li class="nav-item active">
+                <a class="nav-link" href="/blog/">blog</a>
+              </li>
+
+              <!-- Other pages -->
+              <li class="nav-item ">
+                <a class="nav-link" href="/projects/">Projects</a>
+              </li>
+              <li class="nav-item ">
+                <a class="nav-link" href="/publications/">Publications</a>
+              </li>
+              <li class="nav-item ">
+                <a class="nav-link" href="/teaching/">Teaching</a>
+              </li>
+
+              <!-- Toogle theme mode -->
+              <div class="toggle-container">
+                <a id="light-toggle">
+                  <i class="fas fa-moon"></i>
+                  <i class="fas fa-sun"></i>
+                </a>
+              </div>
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Content -->
+    <div class="container mt-5">
+      <!-- _layouts/post.html -->
+
+<div class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">Robot localization with Kalman-Filters and landmarks</h1>
+    <p class="post-meta">September 17, 2018</p>
+    <p class="post-tags">
+      <a href="/blog/2018"> <i class="fas fa-calendar fa-sm"></i> 2018 </a>
+        ·  
+        <a href="/blog/tag/blog">
+          <i class="fas fa-hashtag fa-sm"></i> blog</a>  
+          
+
+    </p>
+  </header>
+
+  <article class="post-content">
+    <p>Meet <strong>Robby</strong>. Robby is a robot. Well technically he is a simplistic virtual model of a robot, but that should be fine for our purpose. Robby is lost in his virtual world consisting of a two-dimensional plane and a couple of landmarks. He does have a map of his environment (no mapping is needed), but he does not know where exactly he is located in this environment.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="/images/localization/1.png" alt=""></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>Robby (big red circle) and two landmarks (smaller red circles)</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The purpose of this post is to walk you through the steps of robot localization using landmark detection and Extended Kalman Filtering.</p>
+
+<hr>
+
+<h1 id="part-1-linear-kalman-filters">Part 1: Linear Kalman Filters</h1>
+
+<p>Kalman Filtering can be understood as a way of making sense of a noisy world. When we want to determine where a robot is located, we can rely on two things: We know how the robot moves from time to time since we command it to move in a certain way. This is called state transitioning (i.e. how the robot moves from one state to the other). And we can measure the robot’s environment using its various sensors such as cameras, lidar, or echolot. The problem is that both sets of information are subject of random noise. We do not know exactly how exactly the robot transitions from state to state since actuators are not perfect and we cannot measure the distance to objects with infinite precision. This is where Kalman Filtering comes to play.</p>
+
+<p>Kalman Filtering allows us to combine the uncertainties regarding the current state of the robot (i.e. where it is located and in which direction it is looking) and the uncertainties regarding its sensor measurements and to ideally decrease the overall uncertainty of the robot. Both uncertainties are usually described by a Gaussian probability distribution, or Normal distribution. A Gaussian distribution has two parameters: mean and variance. The mean expresses, what value of the distribution has the highest probability to be true, and the variance expresses how uncertain we are regarding this mean value.</p>
+
+<p>The algorithm works in a two-step process. In the prediction step, the Kalman filter produces estimates of the current state variables, along with their uncertainties. Once the outcome of the next measurement (necessarily corrupted with some amount of error, including random noise) is observed, these estimates are updated using a weighted average, with more weight being given to estimates with higher certainty. The algorithm is recursive. It can run in real time using only the present input measurements and the previously calculated state and its uncertainty matrix; no additional past information is required.</p>
+
+<p>Since the Wikipedia image for the information flow in a Kalman Filter is so great, I cannot withheld it here:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="/images/localization/2.png" alt=""></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">*Kalman Filtering. Image grabbed from the <a href="https://upload.wikimedia.org/wikipedia/commons/a/a5/Basic_concept_of_Kalman_filtering.svg" target="_blank" rel="noopener noreferrer">Kalman wiki page</a>: *</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>2.png</p>
+
+<p>I will not delve into the mathematical details of Kalman Filtering since many smart people already have done so. For a more in-depth explanation, I can recommend a <a href="https://www.bzarg.com/p/how-a-kalman-filter-works-in-pictures/" target="_blank" rel="noopener noreferrer">stellar blog post by Tim Babb</a></p>
+
+<h1 id="part-2-extended-kalman-filters">Part 2: Extended Kalman Filters</h1>
+
+<p>Extended Kalman Filtering is (as the name suggests) an extension of “Normal” Kalman Filtering. What I did not tell you in the last section is one additional assumption that was made implicitly wenn using Kalman Filters: The state transition model and the measurement model must be linear. From a mathematical standpoint this means that we can use the simplicity and elegance of Linear Algebra to update the robot’s state and the robot’s measurements. In practice, this means that the state variables and measured values are assumed to change linearly over time. For instance, if we measure the robot’s position in \(x\)-direction. We assume that if the robot was at position \(x_1\) at time \(t_1\), it must be at position \(x_1 + v (t_2–t_1)\) at time \(t_2\). The variable \(v\) denotes the robot’s velocity in \(x\)-direction. If the robot is actually accelerating, or doing any other kind of nonlinear motion (e.g driving around in a circle), the state transition model is slighly wrong. Under most circumstances, it is not wrong by much, but in certain edge cases, the assumption of linearity is simply too wrong.</p>
+
+<p>Also assuming a linear measurement model comes with problems. Assume you are driving along a straight road and there is a lighthouse right next to the road in front of you. While you are quite some distance away, your measurement of your distance to the lighthouse and the angle in which it lies from your perspective changes pretty much linearly (the distance decreases by roughly the speed your car has and the angle stays more or less the same). But the closer you get and especially while you drive past it, the angle, on one hand, changes dramatically, and the distance, on the other hand, does not change very much. This is why we cannot use Linear Kalman Filtering for Robby when he is navigating his 2-D world with landmarks scattered across his 2-D plane.</p>
+
+<p><strong>Extended Kalman Filter to the rescue!</strong> It removes the restriction of linear state transition and measurement models. Instead it allows you to use any kind of nonlinear function to model the state transition and the measurements you are making with your robot. In order to still be able to use the efficient and simple Linear Algebra magic in our filter, we do a trick: We linearize the models around the current robot state. This means that we assume the measurement model and the state transition model to be approximately linear around the state at which we are right now (refer to the road / lighhouse example again). But after every time step, we update this linearization around the new state estimate. While this approach forces us to make a linearization of this nonlinear function after every time step, it turns out to be not computationally expensive.</p>
+
+<p>So there you have it. Extended Kalman Filtering is basically “Normal” Kalman Filtering just with additional linearization of the now nonlinear state transition model and measurement model.</p>
+
+<p>In our case where Robby is lost and wants to localize in this (arguably) hostile environment, the Extended Kalman Filtering enables Robby to sense the landmarks and update its belief of its state accordingly. If the variance of the state estimate and the measurement estimate are low enough, Robby is very quickly very sure where he is located in respect to the landmarks and since he knows exactly where the landmarks are, he knows where he is!</p>
+
+<p>His happiness-parameter is skyrocketing!</p>
+
+<h1 id="part-3-implementation">Part 3: Implementation</h1>
+
+<p>The implementation in code is fairly straightforward. For visualization purposes, I chose the SDL2 Library for a quick-and-dirty visualization of all necessary objects. It can be downloaded here:</p>
+
+<p>Following an object-oriented programming approach, I implemented the following classes:</p>
+
+<ul>
+  <li>Class <strong>Robot</strong>
+</li>
+</ul>
+
+<p>The Robot Class’ most important members are the Pose (x position, y position, and direction), and the Velocity (linear and angular velocity) . It can move forward, backward, and robtate left and right. For measuring the landmark positions, it has the method measureLandmarks, which takes the ground-truth landmarks, and overlays their position with fake measurement noise and returns a new list of measured landmarks.</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Robot</span> <span class="p">{</span>
+<span class="nl">public:</span>
+    <span class="n">Robot</span><span class="p">(</span><span class="kt">int</span> <span class="n">x_start</span><span class="p">,</span> <span class="kt">int</span> <span class="n">y_start</span><span class="p">,</span> <span class="kt">float</span> <span class="n">orientation</span><span class="p">,</span> <span class="kt">int</span> <span class="n">radius</span><span class="p">,</span> <span class="n">SDL_Color</span> <span class="n">col</span><span class="p">);</span>
+    <span class="o">~</span><span class="n">Robot</span><span class="p">();</span>
+    
+    <span class="kt">void</span> <span class="n">render</span><span class="p">(</span><span class="n">SDL_Renderer</span> <span class="o">*</span> <span class="n">ren</span><span class="p">);</span>
+    <span class="kt">void</span> <span class="n">move</span><span class="p">(</span><span class="k">const</span> <span class="n">Uint8</span> <span class="o">*</span> <span class="p">,</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXf</span> <span class="o">&amp;</span> <span class="n">control</span><span class="p">);</span>
+    <span class="kt">void</span> <span class="n">moveForward</span><span class="p">(</span><span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXf</span> <span class="o">&amp;</span> <span class="n">control</span><span class="p">);</span>
+    <span class="kt">void</span> <span class="n">moveBackward</span><span class="p">(</span><span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXf</span> <span class="o">&amp;</span> <span class="n">control</span><span class="p">);</span>
+    <span class="kt">void</span> <span class="n">rotateLeft</span><span class="p">(</span><span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXf</span> <span class="o">&amp;</span> <span class="n">control</span><span class="p">);</span>
+    <span class="kt">void</span> <span class="n">rotateRight</span><span class="p">(</span><span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXf</span> <span class="o">&amp;</span> <span class="n">control</span><span class="p">);</span>
+    <span class="kt">void</span> <span class="n">setPose</span><span class="p">(</span><span class="kt">float</span> <span class="n">x</span><span class="p">,</span> <span class="kt">float</span> <span class="n">y</span><span class="p">,</span> <span class="kt">float</span> <span class="n">phi</span><span class="p">);</span>
+
+    <span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXf</span> <span class="n">get_state</span><span class="p">();</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Landmark</span><span class="o">&gt;</span> <span class="n">measureLandmarks</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Landmark</span><span class="o">&gt;</span> <span class="n">landmarks</span><span class="p">);</span>
+
+<span class="nl">private:</span>
+    <span class="n">Pose</span> <span class="n">pose</span><span class="p">;</span>
+    <span class="n">Velocity</span> <span class="n">velocity</span><span class="p">;</span>
+    <span class="n">SDL_Color</span> <span class="n">color</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">radius</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<ul>
+  <li>Class <strong>KalmanFilter</strong>
+</li>
+</ul>
+
+<p>The KalmanFilter class is arguably the most complex one. Its members are the matrices for state transitioning, measurements, and their respecive covariances. I will gloss over most of the details here, as the code comments give some hints about the purpose of most of the code. The filtering magic is happening in the localization_landmarks() member function.</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">KalmanFilter</span> <span class="p">{</span>
+<span class="nl">public:</span>
+
+
+    <span class="cm">/**
+    * Create a Kalman filter with the specified matrices.
+    *   A - System dynamics matrix
+    *   C - Output matrix
+    *   Q - Process noise covariance
+    *   R - Measurement noise covariance
+    *   covariance - Estimate error covariance
+    */</span>
+
+    <span class="n">KalmanFilter</span><span class="p">(</span>
+            <span class="kt">double</span> <span class="n">dt</span><span class="p">,</span>
+            <span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXf</span><span class="o">&amp;</span> <span class="n">A</span><span class="p">,</span>
+            <span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXf</span><span class="o">&amp;</span> <span class="n">C</span><span class="p">,</span>
+            <span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXf</span><span class="o">&amp;</span> <span class="n">Q</span><span class="p">,</span>
+            <span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXf</span><span class="o">&amp;</span> <span class="n">R</span><span class="p">,</span>
+            <span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXf</span><span class="o">&amp;</span> <span class="n">covariance</span>
+    <span class="p">);</span>
+
+    <span class="cm">/**
+    * Initialize the filter with a guess for initial states.
+    */</span>
+    <span class="kt">void</span> <span class="n">init</span><span class="p">(</span><span class="kt">double</span> <span class="n">t0</span><span class="p">,</span> <span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXf</span><span class="o">&amp;</span> <span class="n">x0</span><span class="p">);</span>
+
+    <span class="cm">/**
+    * Update the estimated state based on measured values. The
+    * time step is assumed to remain constant.
+    */</span>
+    <span class="kt">void</span> <span class="n">update</span><span class="p">(</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXf</span><span class="o">&amp;</span> <span class="n">y</span><span class="p">);</span>
+
+    <span class="cm">/**
+    * Return the current state and time.
+    */</span>
+    <span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXf</span> <span class="n">get_state</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="n">state</span><span class="p">;</span> <span class="p">};</span>
+
+    <span class="kt">void</span> <span class="n">renderSamples</span><span class="p">(</span><span class="n">SDL_Renderer</span> <span class="o">*</span> <span class="n">ren</span><span class="p">);</span>
+
+    <span class="kt">void</span> <span class="n">localization_landmarks</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Landmark</span><span class="o">&gt;</span> <span class="o">&amp;</span> <span class="n">observed_landmarks</span><span class="p">,</span>
+                                <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Landmark</span><span class="o">&gt;</span> <span class="o">&amp;</span> <span class="n">true_landmarks</span><span class="p">,</span>
+                                <span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXf</span> <span class="o">&amp;</span> <span class="n">control</span><span class="p">);</span>
+
+<span class="nl">private:</span>
+
+    <span class="c1">// Matrices for computation</span>
+    <span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXf</span> <span class="n">A</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">covariance</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">P0</span><span class="p">;</span>
+
+    <span class="c1">// System dimensions</span>
+    <span class="kt">int</span> <span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">;</span>
+
+    <span class="c1">// Initial and current time</span>
+    <span class="kt">double</span> <span class="n">t0</span><span class="p">,</span> <span class="n">t</span><span class="p">;</span>
+
+    <span class="c1">// Discrete time step</span>
+    <span class="kt">double</span> <span class="n">dt</span><span class="p">;</span>
+
+    <span class="c1">// Is the filter initialized?</span>
+    <span class="kt">bool</span> <span class="n">initialized</span><span class="p">;</span>
+
+    <span class="c1">// n-size identity</span>
+    <span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXf</span> <span class="n">I</span><span class="p">;</span>
+
+    <span class="c1">// Estimated states</span>
+    <span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXf</span> <span class="n">state</span><span class="p">,</span> <span class="n">state_new</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<ul>
+  <li>Class <strong>Landmark</strong>
+</li>
+</ul>
+
+<p>The Landmark class is the most simple of them all. It has a position, an ID (a unique color), and a method for rendering itself to the screen. That’s it.</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Landmark</span> <span class="p">{</span>
+<span class="nl">public:</span>
+    <span class="n">Landmark</span><span class="p">(</span><span class="kt">float</span> <span class="n">x</span><span class="p">,</span> <span class="kt">float</span> <span class="n">y</span><span class="p">,</span> <span class="n">SDL_Color</span> <span class="n">id</span><span class="p">);</span>
+    <span class="o">~</span><span class="n">Landmark</span><span class="p">();</span>
+    <span class="n">Position</span> <span class="n">pos</span><span class="p">;</span>
+    <span class="n">SDL_Color</span> <span class="n">id</span><span class="p">;</span>
+    <span class="kt">void</span> <span class="n">render</span><span class="p">(</span><span class="n">SDL_Renderer</span> <span class="o">*</span> <span class="n">ren</span><span class="p">);</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p>In the main function, all we do is to initialize everything and to run an infinite loop, in which the Robot position is updated according to input from the keyboard, the robot measures its environment and the KalmanFilter does its predict and update step.</p>
+
+<p>The full code can be found (as always) on my GitHub: 
+<a href="https://github.com/jzuern/robot-localization" target="_blank" rel="noopener noreferrer">https://github.com/jzuern/robot-localization</a></p>
+
+<p>Happy Filtering! 🎉</p>
+
+  </article><div id="disqus_thread"></div>
+    <script type="text/javascript">
+      var disqus_shortname  = 'jzuern-github-io';
+      var disqus_identifier = '/blog/2018/kalman';
+      var disqus_title      = "Robot localization with Kalman-Filters and landmarks";
+      (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript" target="_blank" rel="noopener noreferrer">comments powered by Disqus.</a>
+</noscript>
+
+</div>
+
+    </div>
+
+    <!-- Footer -->    
+    <footer class="fixed-bottom">
+      <div class="container mt-0">
+        © Copyright 2022 Jannik  Zürn. Powered by <a href="https://jekyllrb.com/" target="_blank" rel="noopener noreferrer">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio" target="_blank" rel="noopener noreferrer">al-folio</a> theme. Hosted by <a href="https://pages.github.com/" target="_blank" rel="noopener noreferrer">GitHub Pages</a>.
+
+      </div>
+    </footer>
+
+    <!-- JavaScripts -->
+    <!-- jQuery -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+
+    <!-- Bootsrap & MDB scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.2/dist/umd/popper.min.js" integrity="sha256-l/1pMF/+J4TThfgARS6KwWrk/egwuVvhRzfLAMQ6Ds4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.min.js" integrity="sha256-SyTu6CwrfOhaznYZPoolVw2rxoY7lKYKQvqbtqN93HI=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mdbootstrap@4.20.0/js/mdb.min.js" integrity="sha256-NdbiivsvWt7VYCt6hYNT3h/th9vSTL4EDWeGs5SN3DA=" crossorigin="anonymous"></script>
+
+    <!-- Masonry & imagesLoaded -->
+  <script defer src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha256-Nn1q/fx0H7SNLZMQ5Hw5JLaTRZp0yILA/FRexe19VdI=" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/imagesloaded@4/imagesloaded.pkgd.min.js"></script>
+  <script defer src="/assets/js/masonry.js" type="text/javascript"></script>
+    
+  <!-- Medium Zoom JS -->
+  <script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/assets/js/zoom.js"></script><!-- Load Common JS -->
+  <script src="/assets/js/common.js"></script>
+
+    <!-- MathJax -->
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        tags: 'ams'
+      }
+    };
+  </script>
+  <script defer type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js"></script>
+  <script defer src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+
+    
+  </body>
+</html>
+
