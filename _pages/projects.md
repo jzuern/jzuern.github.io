@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Projects
+title: projects
 permalink: /projects/
 description: Fun or interesting stuff I've worked on since I started programming.
 nav: true
