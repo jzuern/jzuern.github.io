@@ -1,18 +1,17 @@
-"Adams":
-  - firstname: ["Edwin", "E.", "E. P.", "Edwin Plimpton"]
-    url: https://en.wikipedia.org/wiki/Edwin_Plimpton_Adams
+"Vertens":
+  - firstname: ["Johan", "J."]
+    url: http://www2.informatik.uni-freiburg.de/~vertensj/
 
-"Podolsky":
-  - firstname: ["Boris", "B.", "B. Y.", "Boris Yakovlevich"]
-    url: https://en.wikipedia.org/wiki/Boris_Podolsky
+"Burgard":
+  - firstname: ["Wolfram", "W."]
+    url: http://www2.informatik.uni-freiburg.de/~burgard/
 
-"Rosen":
-  - firstname: ["Nathan", "N."]
-    url: https://en.wikipedia.org/wiki/Nathan_Rosen
+"Büchner":
+  - firstname: ["Martin", "M."]
+    url: https://rl.uni-freiburg.de/people/buechner/
 
-"Bach": 
-  - firstname: ["Johann Sebastian", "J. S."]
-    url: https://en.wikipedia.org/wiki/Johann_Sebastian_Bach
 
-  - firstname: ["Carl Philipp Emanuel", "C. P. E."]
-    url: https://en.wikipedia.org/wiki/Carl_Philipp_Emanuel_Bach
+"Valada":
+  - firstname: ["Abhinav", "V."]
+    url: https://rl.uni-freiburg.de/people/valada/
+
