@@ -5,6 +5,8 @@ title: publications
 description: A complete list of my publications can be found on my <a href='https://scholar.google.com/citations?user=gB9JqUcAAAAJ&hl=en'>Google Scholar</a>.
 years: [2023, 2022, 2021, 2020]
 nav: true
+social: true  # includes social icons at the bottom of the page
+
 ---
 <!-- _pages/publications.md -->
 <div class="publications">

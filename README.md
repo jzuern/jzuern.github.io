@@ -10,10 +10,13 @@ rake site:publish
 
 
 
-## To remember
+# To remember
 
+## Image resizing
 
-# Bibtex
+`convert trackletmapper.png -resize 200x trackletmapper-200.png`
+
+## Bibtex
 
 abbr: Adds an abbreviation to the left of the entry. You can add links to these by creating a venue.yaml-file in the _data folder and adding entries that match.
 abstract: Adds an "Abs" button that expands a hidden text field when clicked to show the abstract text
