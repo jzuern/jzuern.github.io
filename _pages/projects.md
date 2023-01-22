@@ -1,9 +1,9 @@
 ---
 layout: page
-title: projects
+title: Projects
 permalink: /projects/
 description: Fun or interesting stuff I've worked on since I started programming.
-nav: true
+nav: false
 display_categories: [work, fun]
 horizontal: false
 ---

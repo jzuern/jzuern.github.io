@@ -1,6 +1,6 @@
 ---
 layout: about
-title: About
+title: "About"
 permalink: /
 subtitle: PhD student in Robotics & AI @<a href='http://ais.informatik.uni-freiburg.de'>Autonomous Intelligent Systems</a>.
 

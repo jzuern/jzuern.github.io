@@ -8,8 +8,6 @@ rake site:publish
 
 
 
-
-
 # To remember
 
 ## Image resizing
@@ -30,3 +28,4 @@ code: Adds a "Code" button redirecting to the specified link
 poster: Adds a "Poster" button redirecting to a specified file (if a full link is not specified, the file will be assumed to be placed in the /assets/pdf/ directory)
 slides: Adds a "Slides" button redirecting to a specified file (if a full link is not specified, the file will be assumed to be placed in the /assets/pdf/ directory)
 website: Adds a "Website" button redirecting to the specified link
+

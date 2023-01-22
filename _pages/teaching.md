@@ -1,13 +1,13 @@
 ---
 layout: page
 permalink: /teaching/
-title: teaching
-description: Materials for courses you taught. Replace this text with your description.
+title: Teaching
+description: Supervised theses and taught courses.
 nav: true
 ---
 
 
-# Bachelor's / Master's theses
+# Master's and Bachelor's theses
 I have supervised a number of theses of very bright students:
 
 - Y. Satyawan: Semantic Segmentation of Curb and Curb Cuts in Street Imagery, 2019, Bachelor’s Thesis

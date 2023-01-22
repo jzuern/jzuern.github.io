@@ -10,9 +10,7 @@ email: zuern@informatik.uni-freiburg.de
 description: > # the ">" symbol means to ignore newlines until "footer_text:"
   A playground for everything interesting and irrelevant.
 footer_text: >
-  Powered by <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio">al-folio</a> theme.
-  Hosted by <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>.
-keywords: jannik zürn, computer vision, robotics, freiburg, ai, ml  # add your own keywords or leave empty
+keywords: jannik zürn, computer vision, robotics, freiburg, ai, ml, autonomous driving  # add your own keywords or leave empty
 
 lang: en # the language of your site (for example: en, fr, cn, ru, etc.)
 icon: 🤖  # the emoji used as the favicon (alternatively, provide image name in /assets/img/)
