@@ -3,6 +3,12 @@ bundle exec jekyll build
 bundle exec jekyll serve
 
 
+# Repo branches
+- gh-pages: rake publish publishes to this branch. Is used to produce jzuer.github.io site
+- deploy: 
+- master: stale (do not use)
+
+
 # Publish (to github pages) with:
 rake site:publish
 

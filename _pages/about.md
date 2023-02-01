@@ -18,7 +18,7 @@ My name is Jannik Zürn and I am a Ph.D. student in robotics and AI at the [Auto
 
 ## 👨‍🎓 Short Bio
 
-I am passionate about all kinds of robotics and AI research, especially in the fields of perception. For my undergrad and graduate studies in Mechanical Engineering at Karlsruhe Institute of Technology, I focused in Computational Mechanics and Robotics. During my studies, I did a summer internship at [ANSYS](https://www.ansys.com/) in the field of Computational Fluid Dynamics for internal combustion engines and a software engineering internship at [Mayfield Robotics](https://www.growplatform.com/stories/mayfield-robotics/), a former robotics start-up (Now unfortunately discontinued).
+I am passionate about all kinds of robotics and AI research, especially in the fields of perception. For my undergrad and graduate studies in Mechanical Engineering at Karlsruhe Institute of Technology, I focused in Computational Mechanics and Robotics. During my studies, I did a summer internship at [ANSYS](https://www.ansys.com/) in the field of Computational Fluid Dynamics for internal combustion engines and a software engineering internship at [Mayfield Robotics](https://www.growplatform.com/stories/mayfield-robotics/), a former robotics start-up (now unfortunately discontinued).
 
 
 ## 🔬 Research Interests
@@ -30,7 +30,7 @@ For my PhD, I am mainly interested in autonomous urban navigation with multi-mod
 
 You can find my work homepage with links to current research projects [here](http://www2.informatik.uni-freiburg.de/~zuern/).
 
-You can find my CV [here](/assets/pdf/CV_JannikZuern.pdf).
+You can find my CV [here](/assets/pdf/cv-jannik-zuern.pdf).
 
 
 
