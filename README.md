@@ -1,11 +1,13 @@
 # Run locally
+
+```bash
 bundle exec jekyll build
 bundle exec jekyll serve
-
+```
 
 # Repo branches
-- gh-pages: rake publish publishes to this branch. Is used to produce jzuer.github.io site
-- deploy: 
+- gh-pages: rake publish publishes to this branch. Is used to produce jzuern.github.io site
+- deploy: push local changes here
 - master: stale (do not use)
 
 
