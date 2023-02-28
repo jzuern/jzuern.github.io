@@ -13,7 +13,7 @@ selected_papers: true # includes a list of papers marked as "selected={true}"
 social: true  # includes social icons at the bottom of the page
 ---
 
-My name is Jannik Zürn and I am a Ph.D. student in robotics and AI at the [Autonomous Intelligent Systems Lab](https://ais.informatik.uni-freiburg.de) under the supervision of Prof. Wolfram Burgard at the University of Freiburg, Germany.
+My name is Jannik Zürn. I am a Ph.D. student in robotics and AI at the [Autonomous Intelligent Systems Lab](https://ais.informatik.uni-freiburg.de) under the supervision of Prof. Wolfram Burgard at the University of Freiburg, Germany.
 
 
 ## 👨‍🎓 Short Bio
