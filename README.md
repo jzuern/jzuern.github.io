@@ -20,7 +20,7 @@ rake site:publish
 
 ## Image resizing
 
-`convert trackletmapper.png -resize 200x trackletmapper-200.png`
+`convert trackletmapper.png -resize 180x trackletmapper-180.png`
 
 ## Bibtex
 
