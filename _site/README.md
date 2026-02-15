@@ -1,22 +1,28 @@
-# Run locally
+# Workflows
 
-```bash
-bundle exec jekyll build
-bundle exec jekyll serve
-```
+## Branches
 
-# Repo branches
 - gh-pages: rake publish publishes to this branch. Is used to produce jzuern.github.io site
 - deploy: push local changes here
 - master: stale (do not use)
 
 
-# Publish (to github pages) with:
+## Local development
+
+```bash
+bundle exec jekyll build  # build site
+bundle exec jekyll serve  # serve site
+```
+
+
+
+## Publish (to github pages) with:<fF>
 rake site:publish
 
 
 
-# To remember
+
+
 
 ## Image resizing
 

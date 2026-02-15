@@ -7,7 +7,6 @@
 - master: stale (do not use)
 
 
-
 ## Local development
 
 ```bash
@@ -17,16 +16,10 @@ bundle exec jekyll serve  # serve site
 
 
 
-## Publish (to github pages) with:
+## Publish (to github pages) with:<fF>
 rake site:publish
 
-## Commit changes
 
-```bash
-git add .
-git commit -m "message"
-git push origin deploy
-```
 
 
 
