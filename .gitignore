@@ -1,3 +1,5 @@
-.jekyll-cache/
-*.webp
-*.html
+output/
+.venv/
+__pycache__/
+*.pyc
+.idea/

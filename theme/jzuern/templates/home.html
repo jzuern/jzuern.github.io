@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% import "_publication.html" as pubmacro %}
+{% set active_page = 'home' %}
+
+{% block title %}{{ AUTHOR }} — AI Researcher{% endblock %}
+
+{% block content %}
+{% set about = (hidden_pages | selectattr("slug", "equalto", "about") | list | first) %}
+
+<section class="hero">
+  <div class="hero-text">
+    <h1>{{ AUTHOR }}</h1>
+    <p class="hero-subtitle">{{ SITESUBTITLE }}</p>
+    <div class="social-links">
+      <a href="{{ SOCIAL_LINKS.email }}" title="Email" aria-label="Email">Email</a>
+      <a href="{{ SOCIAL_LINKS.scholar }}" title="Google Scholar" target="_blank" rel="noopener">Scholar</a>
+      <a href="{{ SOCIAL_LINKS.github }}" title="GitHub" target="_blank" rel="noopener">GitHub</a>
+      <a href="{{ SOCIAL_LINKS.linkedin }}" title="LinkedIn" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="{{ SOCIAL_LINKS.orcid }}" title="ORCID" target="_blank" rel="noopener">ORCID</a>
+      <a href="{{ SOCIAL_LINKS.medium }}" title="Medium" target="_blank" rel="noopener">Medium</a>
+    </div>
+  </div>
+  <div class="hero-photo">
+    <img src="{{ SITEURL }}/images/me.jpg" alt="Portrait of {{ AUTHOR }}">
+  </div>
+</section>
+
+<section class="about-content">
+  {% if about %}{{ about.content }}{% endif %}
+</section>
+
+<section class="news">
+  <h2>News</h2>
+  <ul class="news-list">
+    {% for item in NEWS %}
+    <li>
+      <span class="news-date">{{ item.date_str }}</span>
+      <span class="news-text">{{ item.html }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+
+<section class="selected-pubs">
+  <h2>Selected Publications</h2>
+  {% for pub in PUBLICATIONS if pub.selected %}
+    {{ pubmacro.publication(pub, SITEURL) }}
+  {% endfor %}
+  <p><a class="more-link" href="{{ SITEURL }}/publications/">All publications →</a></p>
+</section>
+{% endblock %}

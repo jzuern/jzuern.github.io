@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% set active_page = 'blog' %}
+
+{% block title %}Blog — {{ AUTHOR }}{% endblock %}
+
+{% block content %}
+<h1>Blog</h1>
+<p class="page-intro">Technical writing on machine learning, robotics, and simulation.</p>
+
+{% for year, year_articles in articles | groupby('date.year') | reverse %}
+<h2 class="blog-year">{{ year }}</h2>
+<ul class="post-list">
+  {% for article in year_articles %}
+  <li>
+    <span class="post-date">{{ article.date.strftime("%b %d") }}</span>
+    <a href="{{ SITEURL }}/{{ article.url }}">{{ article.title }}</a>
+  </li>
+  {% endfor %}
+</ul>
+{% endfor %}
+{% endblock %}

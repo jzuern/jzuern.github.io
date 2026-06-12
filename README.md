@@ -1,45 +1,43 @@
-# Workflows
+# jzuern.github.io
+
+Personal academic website, built with [Pelican](https://getpelican.com) (Python) and a custom theme.
 
 ## Branches
 
-- gh-pages: rake publish publishes to this branch. Is used to produce jzuern.github.io site
-- deploy: push local changes here
-- master: stale (do not use)
-
+- `deploy` — source branch. Push here; GitHub Actions builds the site and publishes it.
+- `gh-pages` — build output, served by GitHub Pages. Never edit manually.
+- `master` — stale (do not use).
 
 ## Local development
 
 ```bash
-bundle exec jekyll build  # build site
-bundle exec jekyll serve  # serve site
+uv sync                                       # install dependencies
+uv run pelican content -s pelicanconf.py     # build into output/
+uv run pelican --listen --autoreload         # serve at http://localhost:8000 with live reload
 ```
 
+## Publishing
 
+Push to the `deploy` branch. The GitHub Actions workflow (`.github/workflows/deploy.yml`)
+builds the site with `publishconf.py` and force-pushes the result to `gh-pages`.
 
-## Publish (to github pages) with:<fF>
-rake site:publish
+## Project layout
 
+| Path | Purpose |
+|---|---|
+| `content/pages/` | About, Projects, Teaching pages (Markdown) |
+| `content/blog/` | Blog posts (Markdown, math via `$...$` / `$$...$$`) |
+| `content/images/` | All images (referenced as `/images/...`) |
+| `content/pdf/` | CV and other documents |
+| `data/papers.bib` | Publications database (BibTeX) |
+| `data/news.yml` | News items shown on the homepage |
+| `theme/jzuern/` | Custom theme (Jinja2 templates + CSS + JS) |
+| `sitedata.py` | Parses papers.bib / news.yml into template context |
 
+## Adding content
 
-
-
-
-## Image resizing
-
-`convert trackletmapper.png -resize 180x trackletmapper-180.png`
-
-## Bibtex
-
-abbr: Adds an abbreviation to the left of the entry. You can add links to these by creating a venue.yaml-file in the _data folder and adding entries that match.
-abstract: Adds an "Abs" button that expands a hidden text field when clicked to show the abstract text
-arxiv: Adds a link to the Arxiv website (Note: only add the arxiv identifier here - the link is generated automatically)
-bibtex_show: Adds a "Bib" button that expands a hidden text field with the full bibliography entry
-html: Inserts a "HTML" button redirecting to the user-specified link
-pdf: Adds a "PDF" button redirecting to a specified file (if a full link is not specified, the file will be assumed to be placed in the /assets/pdf/ directory)
-supp: Adds a "Supp" button to a specified file (if a full link is not specified, the file will be assumed to be placed in the /assets/pdf/ directory)
-blog: Adds a "Blog" button redirecting to the specified link
-code: Adds a "Code" button redirecting to the specified link
-poster: Adds a "Poster" button redirecting to a specified file (if a full link is not specified, the file will be assumed to be placed in the /assets/pdf/ directory)
-slides: Adds a "Slides" button redirecting to a specified file (if a full link is not specified, the file will be assumed to be placed in the /assets/pdf/ directory)
-website: Adds a "Website" button redirecting to the specified link
-
+- **Publication:** add a BibTeX entry to `data/papers.bib`. Supported extra fields:
+  `pdf`, `arxiv` (identifier only), `website`, `code`, `teaser` (file in
+  `content/images/paper_teasers/`), `selected` (`true` shows it on the homepage), `award`.
+- **News item:** add a `{date, text}` entry to `data/news.yml` (Markdown links supported).
+- **Blog post:** add `content/blog/YYYY-MM-DD-slug.md` with `Title:`, `Date:`, `Slug:` metadata.
