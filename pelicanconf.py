@@ -65,7 +65,7 @@ PUBLICATIONS = load_publications()
 NEWS = load_news()
 
 SOCIAL_LINKS = {
-    "email": "mailto:zuern@informatik.uni-freiburg.de",
+    "email": "mailto:jannik.zuern@gmail.com",
     "scholar": "https://scholar.google.com/citations?user=gB9JqUcAAAAJ",
     "github": "https://github.com/jzuern",
     "linkedin": "https://www.linkedin.com/in/jannik-zuern",

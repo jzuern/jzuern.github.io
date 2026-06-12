@@ -1,3 +1,13 @@
+- date: 2025-06-01
+  text: >
+    I joined [Parallel Domain](https://paralleldomain.com) as a Senior Machine Learning Engineer, working on
+    3D Gaussian Splatting and generative models for high-fidelity synthetic environments!
+
+- date: 2024-07-11
+  text: >
+    We released [WayveScenes101](https://wayve.ai/science/wayvescenes101/), a dataset and benchmark for
+    novel view synthesis in autonomous driving — 101 diverse driving scenes with over 100k images!
+
 - date: 2023-11-02
   text: >
     🎉 Our paper [AutoGraph: Predicting Lane Graphs from Traffic Observations](https://arxiv.org/pdf/2306.15410.pdf)

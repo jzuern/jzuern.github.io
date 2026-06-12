@@ -4,7 +4,7 @@ Status: hidden
 
 My name is Jannik Zürn. I am a Senior Machine Learning Engineer at [Parallel Domain](https://paralleldomain.com).
 
-I am an AI researcher and engineer passionate about the intersection of robotics and simulation. My work focuses on building the sophisticated simulation environments and generative models necessary for the next generation of autonomous systems.
+I am an AI engineer and scientist passionate about the intersection of robotics and simulation. My work focuses on building the sophisticated simulation environments and generative models necessary for the next generation of autonomous systems.
 
 ## Experience
 
