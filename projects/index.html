@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Projects — Jannik Zürn</title>
+  <meta name="description" content="Jannik Zürn — AI engineer and scientist working on neural simulation, 3D reconstruction, and robot learning.">
+  <meta name="keywords" content="Jannik Zürn, machine learning, computer vision, robotics, gaussian splatting, autonomous driving">
+  <link rel="icon" href="https://jzuern.github.io/favicon.ico">
+  <script>
+    (function () {
+      const stored = localStorage.getItem("theme");
+      const preferred = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      document.documentElement.dataset.theme = stored || preferred;
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://jzuern.github.io/theme/css/main.css">
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav container">
+      <a class="nav-brand" href="https://jzuern.github.io/">Jannik Zürn</a>
+      <div class="nav-links">
+        <a href="https://jzuern.github.io/" >About</a>
+        <a href="https://jzuern.github.io/publications/" >Publications</a>
+        <a href="https://jzuern.github.io/blog/" >Blog</a>
+        <a href="https://jzuern.github.io/projects/" class="active">Projects</a>
+        <a href="https://jzuern.github.io/teaching/" >Teaching</a>
+        <a href="https://jzuern.github.io/pdf/CV_Jannik_Zürn.pdf">CV</a>
+        <button id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+          <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+<article class="page">
+  <h1>Projects</h1>
+  <div class="page-content">
+    <p>A selection of open-source projects and research code.</p>
+<h2 id="research-code">Research Code</h2>
+<ul>
+<li><strong><a href="https://github.com/jzuern/lanegnn">LaneGNN / UrbanLaneGraph</a></strong> — Dataset, benchmark, and code for <em>Learning and Aggregating Lane Graphs for Urban Automated Driving</em> (CVPR 2023).</li>
+<li><strong><a href="https://github.com/jzuern/autograph-pub">AutoGraph</a></strong> — Code for <em>AutoGraph: Predicting Lane Graphs from Traffic Observations</em> (RA-L 2024).</li>
+<li><strong><a href="https://github.com/jzuern/heatnet-pub">HeatNet</a></strong> — Code for <em>HeatNet: Bridging the Day-Night Domain Gap in Semantic Segmentation with Thermal Images</em> (IROS 2020).</li>
+<li><strong><a href="https://github.com/wayveai/wayve_scenes">WayveScenes101</a></strong> — Dataset and benchmark for novel view synthesis in autonomous driving.</li>
+</ul>
+<h2 id="fun">Fun</h2>
+<ul>
+<li>
+<p><strong><a href="https://github.com/jzuern/sph-fluidsim-fortran">SPH Fluid Simulation in Fortran90</a></strong> — A minimalistic particle-based 3D smoothed-particle-hydrodynamics fluid simulator, implemented in Fortran90.</p>
+<p><img alt="SPH fluid simulation" src="/images/fluidsim.jpg"></p>
+</li>
+<li>
+<p><strong><a href="https://github.com/jzuern/sph-fluidsim">sph-fluidsim</a></strong> — A particle-based 2D fluid simulation in C++.</p>
+</li>
+<li><strong><a href="https://github.com/jzuern/continuum">continuum</a></strong> — A lightweight GPU-accelerated 2D physics library.</li>
+<li><strong><a href="https://github.com/jzuern/robot-localization">robot-localization</a></strong> — A small 2D robot localization game using Kalman filtering, written in C++11.</li>
+</ul>
+  </div>
+</article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <span>© Jannik Zürn. Built with <a href="https://getpelican.com">Pelican</a>.</span>
+    </div>
+  </footer>
+
+  <script src="https://jzuern.github.io/theme/js/theme.js"></script>
+</body>
+</html>

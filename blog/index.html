@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Blog — Jannik Zürn</title>
+  <meta name="description" content="Jannik Zürn — AI engineer and scientist working on neural simulation, 3D reconstruction, and robot learning.">
+  <meta name="keywords" content="Jannik Zürn, machine learning, computer vision, robotics, gaussian splatting, autonomous driving">
+  <link rel="icon" href="https://jzuern.github.io/favicon.ico">
+  <script>
+    (function () {
+      const stored = localStorage.getItem("theme");
+      const preferred = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      document.documentElement.dataset.theme = stored || preferred;
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://jzuern.github.io/theme/css/main.css">
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav container">
+      <a class="nav-brand" href="https://jzuern.github.io/">Jannik Zürn</a>
+      <div class="nav-links">
+        <a href="https://jzuern.github.io/" >About</a>
+        <a href="https://jzuern.github.io/publications/" >Publications</a>
+        <a href="https://jzuern.github.io/blog/" class="active">Blog</a>
+        <a href="https://jzuern.github.io/projects/" >Projects</a>
+        <a href="https://jzuern.github.io/teaching/" >Teaching</a>
+        <a href="https://jzuern.github.io/pdf/CV_Jannik_Zürn.pdf">CV</a>
+        <button id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+          <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+<h1>Blog</h1>
+<p class="page-intro">Technical writing on machine learning, robotics, and simulation.</p>
+
+<h2 class="blog-year">2020</h2>
+<ul class="post-list">
+  <li>
+    <span class="post-date">Oct 31</span>
+    <a href="https://jzuern.github.io/blog/2020/teaching/">Why good teaching helps you do better research</a>
+  </li>
+  <li>
+    <span class="post-date">Mar 16</span>
+    <a href="https://jzuern.github.io/blog/2020/heatnet/">HeatNet: Bridging the Day-Night Domain Gap in Semantic Segmentation with Thermal Images</a>
+  </li>
+</ul>
+<h2 class="blog-year">2019</h2>
+<ul class="post-list">
+  <li>
+    <span class="post-date">May 04</span>
+    <a href="https://jzuern.github.io/blog/2019/tensorflow2/">What's new with TensorFlow 2.0?</a>
+  </li>
+  <li>
+    <span class="post-date">Feb 25</span>
+    <a href="https://jzuern.github.io/blog/2019/autoencoder/">But what exactly are Autoencoders?</a>
+  </li>
+  <li>
+    <span class="post-date">Jan 01</span>
+    <a href="https://jzuern.github.io/blog/2019/terrain/">Self-Supervised Visual Terrain Classification</a>
+  </li>
+</ul>
+<h2 class="blog-year">2018</h2>
+<ul class="post-list">
+  <li>
+    <span class="post-date">Nov 24</span>
+    <a href="https://jzuern.github.io/blog/2018/rl/">Reinforcement Learning — An introduction</a>
+  </li>
+  <li>
+    <span class="post-date">Nov 07</span>
+    <a href="https://jzuern.github.io/blog/2018/colab-tpu/">Using a TPU in Google Colab</a>
+  </li>
+  <li>
+    <span class="post-date">Oct 25</span>
+    <a href="https://jzuern.github.io/blog/2018/cmc/">The C-M-C Approach</a>
+  </li>
+  <li>
+    <span class="post-date">Sep 17</span>
+    <a href="https://jzuern.github.io/blog/2018/kalman/">Robot localization with Kalman-Filters and landmarks</a>
+  </li>
+  <li>
+    <span class="post-date">Jul 15</span>
+    <a href="https://jzuern.github.io/blog/2018/flow3/">Neural Networks for Steady-State Fluid Flow Prediction : Part 3</a>
+  </li>
+  <li>
+    <span class="post-date">May 10</span>
+    <a href="https://jzuern.github.io/blog/2018/flow2/">Neural Networks for Steady-State Fluid Flow Prediction : Part 2</a>
+  </li>
+  <li>
+    <span class="post-date">Apr 06</span>
+    <a href="https://jzuern.github.io/blog/2018/flow1/">Neural Networks for Steady-State Fluid Flow Prediction : Part 1</a>
+  </li>
+</ul>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <span>© Jannik Zürn. Built with <a href="https://getpelican.com">Pelican</a>.</span>
+    </div>
+  </footer>
+
+  <script src="https://jzuern.github.io/theme/js/theme.js"></script>
+</body>
+</html>

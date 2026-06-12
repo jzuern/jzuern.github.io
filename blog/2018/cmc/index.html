@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The C-M-C Approach — Jannik Zürn</title>
+  <meta name="description" content="A way of thinking about complex things">
+  <meta name="keywords" content="Jannik Zürn, machine learning, computer vision, robotics, gaussian splatting, autonomous driving">
+  <link rel="icon" href="https://jzuern.github.io/favicon.ico">
+  <script>
+    (function () {
+      const stored = localStorage.getItem("theme");
+      const preferred = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      document.documentElement.dataset.theme = stored || preferred;
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://jzuern.github.io/theme/css/main.css">
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav container">
+      <a class="nav-brand" href="https://jzuern.github.io/">Jannik Zürn</a>
+      <div class="nav-links">
+        <a href="https://jzuern.github.io/" >About</a>
+        <a href="https://jzuern.github.io/publications/" >Publications</a>
+        <a href="https://jzuern.github.io/blog/" class="active">Blog</a>
+        <a href="https://jzuern.github.io/projects/" >Projects</a>
+        <a href="https://jzuern.github.io/teaching/" >Teaching</a>
+        <a href="https://jzuern.github.io/pdf/CV_Jannik_Zürn.pdf">CV</a>
+        <button id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+          <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+<article class="post">
+  <header class="post-header">
+    <h1>The C-M-C Approach</h1>
+    <div class="post-meta">Oct 25, 2018</div>
+  </header>
+  <div class="post-content">
+    <p>Lately, I came to the realization that the process of thoroughly understanding a scientific theory or fact may be divided into three tiers:</p>
+<ul>
+<li><strong>Concept (C)</strong></li>
+<li><strong>Math (M)</strong></li>
+<li><strong>Code (C)</strong></li>
+</ul>
+<p>A concept or idea of the approach is needed in order wrap your head around the thing you are trying to understand. This concept may be a very vague yet profound statement boiling down some essential scientific findings to a single sentence or a couple of sentences at most. Some scientists even argue that the shorter a scientific theory can be summarized, the more fundamental its nature can be understood. The same goes for good explanations of concepts: The simpler the better. Or, to put it like Albert Einstein:</p>
+<blockquote>
+<p>"If you can’t explain it simply, you don’t understand it well enough."</p>
+</blockquote>
+<p>Take for instance the problem of heat conduction in materials. A very abstract concept of the conduction of heat may be the following statement: <em>“Heat flows from hot areas to cold areas”</em>. Already this simple statement allows us to make meaningful predictions about the future state of a system. If you touch a hot stove, you know that your hand will sooner or later become hot. You cannot make precise predictions about the concrete time span in which your hand will get or the concrete temperature your hand will have but you have a rough idea. Are more advanced concept to grasp may be the wave-particle-duality describing the alleged discrepancy between describing a particle as a wave and as a particle at the same time. Quantum mechanics allowed us to develop a new framework or concept in which a particle as both a wave and a particle at the same time. Having a good grasp of the concept of a theory is the first step in understanding this theory.</p>
+<h2 id="math">Math</h2>
+<p>Mathematical equations describe the concept in the most abstract possible way. While the concept draws from your intuition and allows for a qualitative prediction of the future state of a system, mathematical equations allow us to precisely express quantitative properties of the system. In the context of heat conduction in materials, the 3-D heat-diffusion-equation allows us to make precise statements about the temperature u of a material as a function of space and time:</p>
+<div class="arithmatex">\[
+\begin{align*}
+\frac{\partial u}{\partial t} = \alpha \nabla^2 u = \alpha \Bigg( \frac{\partial^2 u}{\partial x^2} + \frac{\partial^2 u}{\partial y^2} + \frac{\partial^2 u}{\partial z^2}\Bigg)
+\end{align*}
+\]</div>
+<p>The constant alpha denotes the <em>thermal diffusivity</em> of the material, which is defined as the thermal conductivity k over the product of the material density rho and the specific heat capacity <span class="arithmatex">\(c_p\)</span>:</p>
+<div class="arithmatex">\[
+\begin{align*}
+\alpha = \frac{k}{c_p \rho}
+\end{align*}
+\]</div>
+<p>Thinking about the math behind a concept allows you to deeply dive into the problem. It allows you to set the different parameters of the system into a relationship with another. In this example, you do not need to immediately see a possible solution to this differential equation. You might, however, understand that the spatial and temporal derivatives of the field quantity temperature are in a special relationship with one another, which is true at every point in space and at every moment in time.</p>
+<p>Of course, other problems might have much more complex equations and might require a much higher mental workload in order for you to hold all the complex ideas in your head. Take, again, our wave-particle duality concept: The mathematical equation describing a quantum particle is a partial differential equation as well: The Schrödinger equation:</p>
+<div class="arithmatex">\[
+\begin{align*}
+i \hbar \frac{\partial \Psi}{\partial t} = - \frac{\hbar^2}{2 m} \nabla^2 \Psi + V \Psi
+\end{align*}
+\]</div>
+<p>This equation describes the behavior of the wave function <span class="arithmatex">\(\Psi\)</span> of a quantum particle. While the Schrödinger equation is arguably more complex and difficult to grasp, it has the same fundamental properties as the heat equation: The time derivative of the function we try to obtain is in direct relationship to its second spatial derivative.</p>
+<p>Pro-tip: Do not let yourself be intimidated by mathematical notation. It might sometimes look overwhelming but notation usually is only needed to write down an obvious statement in a water-proof fashion.</p>
+<h2 id="code">Code</h2>
+<p>I lied to you in the last paragraph. You do not understand the math until you implemented it in code. Ok, this might be an overstatement but I heavily encourage you to implement your math in code, otherwise you might fall for the illusion of understanding your problem without actually and thoroughly understanding it.</p>
+<p>Writing code is useful. First of all, it helps you to play around with your problem. Mathematical equations are great for expressing complex relationships between objects. However, seeing those relationships in action in your computer adds a whole new level to your understanding of the problem. It allows you to “experience” the mathematics behind the problem. It lets you play with parameters and see how the system state changes due to these differently chosen parameters.</p>
+<p>And secondly, writing your problem in terms of code, lets you view your problem from different angles. It makes you think about the implications of possible solutions. Writing code also allows you to easily visualize your problem and the theory behind it. If you have a concise visualization of your problem, you can easily make a mental model of the system and its behavior. I deeply believe that anyone who understands a scientific theory and says that he does not have some kind of visualization of the problem in his mind does not really tell the truth.</p>
+<p>Let us get back to our heat equation and implement a simple program to get a solution to the equation:</p>
+<p>To make visualization easier, let us focus on one-dimensional heat conduction problems. This boils the differential equation down to the following form:</p>
+<div class="arithmatex">\[
+\begin{align*}
+\frac{\partial u}{\partial t} = \frac{k}{c_p \rho} \Bigg( \frac{\partial^2 u}{\partial x^2}\Bigg)
+\end{align*}
+\]</div>
+<p>First of all, we need to specify a discrete representation of the continuous differential equation of heat conduction stated previously:</p>
+<div class="arithmatex">\[
+\begin{align*}
+\frac{u_i^{n+1} - u_i^{n}}{\Delta t} = \alpha \frac{u_{i+1}^{n} - 2 u_i^{n} + u_{i-1}^{n}}{2 \Delta x^2}
+\end{align*}
+\]</div>
+<p>The originally continuous temperature u is discretized into discrete points in space and time. The subscripts i and the superscripts n denote the i-th spatial coordinate and n-th time step, respectively. The discrete approximation of the spatial derivative was obtained using the central differences approach while the discrete approximation of the temporal derivative was obtained using the (forward) Euler-method.</p>
+<p>In order to find a solution, we solve the above equation for <span class="arithmatex">\(u_i^{n+1}\)</span> and iterate through all time steps in an outer loop and through all spatial points in an inner loop. We also have to apply initial conditions for <span class="arithmatex">\(u(x, t=0)\)</span> and boundary conditions for <span class="arithmatex">\(u(x=0,t)\)</span> and <span class="arithmatex">\(u(x=L,t)\)</span>, while <span class="arithmatex">\(x=0\)</span> and <span class="arithmatex">\(x=L\)</span> denote the left and right ends of the 1-D simulation domain.</p>
+<p>The code get a solution to this equation follows and is fairly straightforward and should be self explaining:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="n">L</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="c1"># length of 1-D heat-conducting object</span>
+<span class="n">Nx</span> <span class="o">=</span> <span class="mi">100</span> <span class="c1"># number of spatial grid points</span>
+<span class="n">T</span> <span class="o">=</span> <span class="mf">10.0</span> <span class="c1"># maximum time</span>
+<span class="n">Nt</span> <span class="o">=</span> <span class="mi">1000</span> <span class="c1"># number of time steps</span>
+<span class="n">a</span> <span class="o">=</span> <span class="mf">0.005</span> <span class="c1"># material proberty alpha</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>    <span class="c1"># mesh points in space</span>
+<span class="n">dx</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">Nt</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>    <span class="c1"># mesh points in time</span>
+<span class="n">dt</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="n">u</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>           <span class="c1"># unknown u at new time step</span>
+<span class="n">u_1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>           <span class="c1"># u at the previous time step</span>
+
+<span class="c1"># plotting boilerplate</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">li</span><span class="p">,</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">relim</span><span class="p">()</span> 
+<span class="n">ax</span><span class="o">.</span><span class="n">autoscale_view</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span><span class="kc">True</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># definition of initial conditions</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">initial</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span>
+
+<span class="c1"># Set initial condition u(x,0) = initial(x)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">initial</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+<span class="c1"># loop through every time step</span>
+<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Nt</span><span class="p">):</span>
+
+    <span class="c1"># Compute u at inner grid points</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">Nx</span><span class="p">):</span>
+        <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">a</span><span class="o">*</span><span class="n">dt</span><span class="o">/</span><span class="p">(</span><span class="n">dx</span><span class="o">*</span><span class="n">dx</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># Appöy boundary conditions</span>
+    <span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span>
+    <span class="n">u</span><span class="p">[</span><span class="n">Nx</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span>
+
+    <span class="c1"># Update u_1 before next step</span>
+    <span class="n">u_1</span><span class="p">[:]</span><span class="o">=</span> <span class="n">u</span>
+
+    <span class="c1"># plot every 10 time steps</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">li</span><span class="o">.</span><span class="n">set_ydata</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.001</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;frames/&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.png&#39;</span><span class="p">)</span>
+</code></pre></div>
+<p>The visualization of the solution to this simple differential equation should add a deeper understanding of the process of heat conduction through materials. The following three GIFS show the change in the material temperature over time. Boundary conditions of <span class="arithmatex">\(u(x=0,t) = 1.0\)</span> and <span class="arithmatex">\(u(x=1.0,t) = 0.0\)</span> are applied for all three setups.</p>
+<figure>
+  <img src="/images/1.gif" alt="Slow heat conduction">
+  <figcaption>Slow heat conduction</figcaption>
+</figure>
+
+<figure>
+  <img src="/images/2.gif" alt="Fast heat conduction">
+  <figcaption>Fast heat conduction</figcaption>
+</figure>
+
+<figure>
+  <img src="/images/3.gif" alt="Fast heat conduction with different initial conditions">
+  <figcaption>Fast heat conduction with different initial conditions</figcaption>
+</figure>
+
+<p>Playing around with the heat conduction parameters should make you develop a new intuition regarding the dynamical behavior of the system.</p>
+<p><strong>As a side-note</strong>: You might also encounter some numerical stability issues when selecting certain time step sizes:</p>
+<figure>
+  <img src="/images/4.gif" alt="Numerical divergence of solution due to time step size">
+  <figcaption>Numerical divergence of solution due to time step size</figcaption>
+</figure>
+
+<p>This problem is known as the Courant–Friedrichs–Lewy condition, which states that there is an upper limit to any time step size Delta t in finite differences schemes, which depends on the speed of information flow though the simulation domain and the length interval <span class="arithmatex">\(\Delta x\)</span>.</p>
+<hr>
+<blockquote>
+<p>Using the C-M-C approach, you should have developed an intuitive understanding of the whole problem. Going from an abstract concept you were able to understand the math behind the problem and were thus able to implement the equations in program code. Tinkering with parameters and visualizing your results allowed you to more deeply understand the problem and even find some numerical issues with the finite differences solution scheme.</p>
+</blockquote>
+<p>Congrats, now you are a real problem-solver!</p>
+<p>Let me know in the comments whether you think that the C-M-C approach can be viewed as a easy-to-follow guide to help you understand difficult problems and if you what approaches to improve your understanding of a topic you use in your daily scientific struggles.</p>
+  </div>
+</article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <span>© Jannik Zürn. Built with <a href="https://getpelican.com">Pelican</a>.</span>
+    </div>
+  </footer>
+
+  <script src="https://jzuern.github.io/theme/js/theme.js"></script>
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [["\\(", "\\)"]],
+      displayMath: [["\\[", "\\]"]],
+      processEscapes: true
+    },
+    options: { ignoreHtmlClass: ".*", processHtmlClass: "arithmatex" }
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</body>
+</html>
